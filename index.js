@@ -170,7 +170,7 @@ mongoose.connect(MONGODB_URL,)
           const imagePath = path.join(__dirname, 'images', 'Octies_bot_logo.png');
       
           await bot.sendPhoto(chatId, imagePath, {
-            caption: "Welcome to AnyTap! xplore our world of simple and exciting onchain tasks and unique NFT collections. Start your journey into cryptocurrency with us!",
+            caption: "Welcome to AnyTap! explore our world of simple and exciting onchain tasks and unique NFT collections. Start your journey into cryptocurrency with us!",
             reply_markup: {
               inline_keyboard: [
                 [
