@@ -31,6 +31,20 @@ mongoose.connect(MONGODB_URL,)
         return `https://t.me/AnyTap_bot?start=${referralCode}`;
       };
 
+
+      app.get('/user/:id', async (req, res) => {
+        try {
+            const user = await UserProgress.findOne({ telegramId: req.params.id });
+            if (!user) {
+                return res.status(404).json({ success: false, message: 'Пользователь не найден.' });
+            }
+            res.json({ success: true, user });
+        } catch (error) {
+            console.error('Ошибка при получении данных пользователя:', error);
+            res.status(500).json({ success: false, message: 'Ошибка сервера.' });
+        }
+    });
+    
     app.post('/generate-referral', async (req, res) => {
       const { userId } = req.body;
     
@@ -84,19 +98,7 @@ mongoose.connect(MONGODB_URL,)
       }
     });
     
-    app.post('/api/user/:telegramId', async (req, res) => {
-        try {
-          const user = await UserProgress.findOne({ telegramId: req.params.telegramId });
-          if (!user) {
-            return res.status(404).json({ message: 'User not found' });
-          }
-          res.json(user);
-        } catch (error) {
-          console.error('Ошибка при получении данных пользователя:', error);
-          res.status(500).json({ message: 'Server error' });
-        }
-      });
-      
+ 
       bot.onText(/\/start(?: (.+))?/, async (msg, match) => {
         const chatId = msg.chat.id;
         const userId = msg.from.id;
