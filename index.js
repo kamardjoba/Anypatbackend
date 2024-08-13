@@ -32,19 +32,26 @@ mongoose.connect(MONGODB_URL,)
       };
 
 
-      app.get('/user/:id', async (req, res) => {
+      app.get('/user-info', async (req, res) => {
+        const { telegramId } = req.query;
+      
         try {
-            const user = await UserProgress.findOne({ telegramId: req.params.id });
-            if (!user) {
-                return res.status(404).json({ success: false, message: 'Пользователь не найден.' });
-            }
-            res.json({ success: true, user });
+          const user = await UserProgress.findOne({ telegramId: telegramId });
+          if (!user) {
+            return res.status(404).json({ success: false, message: 'Пользователь не найден.' });
+          }
+      
+          res.json({
+            success: true,
+            firstName: user.firstName,
+            coins: user.coins
+          });
         } catch (error) {
-            console.error('Ошибка при получении данных пользователя:', error);
-            res.status(500).json({ success: false, message: 'Ошибка сервера.' });
+          console.error('Ошибка при получении информации о пользователе:', error);
+          res.status(500).json({ success: false, message: 'Ошибка при получении информации о пользователе.' });
         }
-    });
-    
+      });
+      
     app.post('/generate-referral', async (req, res) => {
       const { userId } = req.body;
     
