@@ -13,7 +13,15 @@ const port = process.env.PORT || 3001;
 const token = '7124930288:AAGttBe0D8AlxtViWrzECUgQts3-QM1DHus';
 const bot = new TelegramBot(token, { polling: true });
 
-app.use(cors());
+const corsOptions = {
+    origin: 'https://gleaming-semifreddo-896ccf.netlify.app/', // Укажите домен вашего фронтенда
+    optionsSuccessStatus: 200
+};
+
+app.use(cors(corsOptions));
+
+
+
 app.use(bodyParser.json());
 app.use(express.json());
 
