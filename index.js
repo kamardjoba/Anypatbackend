@@ -14,7 +14,7 @@ const token = '7124930288:AAGttBe0D8AlxtViWrzECUgQts3-QM1DHus';
 const bot = new TelegramBot(token, { polling: true });
 
 const corsOptions = {
-    origin: 'https://gleaming-semifreddo-896ccf.netlify.app/', // Укажите домен вашего фронтенда
+    origin: '*', // Разрешить запросы с любых доменов
     optionsSuccessStatus: 200
 };
 
