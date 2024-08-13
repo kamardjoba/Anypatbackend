@@ -19,9 +19,6 @@ const corsOptions = {
 };
 
 app.use(cors(corsOptions));
-
-
-
 app.use(bodyParser.json());
 app.use(express.json());
 
@@ -87,7 +84,7 @@ mongoose.connect(MONGODB_URL,)
       }
     });
     
-    app.get('/api/user/:telegramId', async (req, res) => {
+    app.post('/api/user/:telegramId', async (req, res) => {
         try {
           const user = await UserProgress.findOne({ telegramId: req.params.telegramId });
           if (!user) {
