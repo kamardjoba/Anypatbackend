@@ -22,14 +22,17 @@ const UserSchema = new mongoose.Schema({
     referralCode: { 
       type: String, 
       unique: true 
-    }, // Код реферала
+    },
     referredUsers: [{
       nickname: String,
       earnedCoins: Number
-    }]
-  });
-  
-  const UserProgress = mongoose.model('Anytap', UserSchema);
-  
-  module.exports = UserProgress;
-  
+    }],
+    photoUrl: {
+      type: String,
+      required: false
+    } // Новый путь для фото
+});
+
+const UserProgress = mongoose.model('Anytap', UserSchema);
+
+module.exports = UserProgress;

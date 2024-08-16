@@ -34,24 +34,25 @@ mongoose.connect(MONGODB_URL,)
 
       app.get('/user-info', async (req, res) => {
         const { telegramId } = req.query;
-      
+    
         try {
-          const user = await UserProgress.findOne({ telegramId: telegramId });
-          if (!user) {
-            return res.status(404).json({ success: false, message: 'Пользователь не найден.' });
-          }
-      
-          res.json({
-            success: true,
-            firstName: user.firstName,
-            coins: user.coins
-          });
+            const user = await UserProgress.findOne({ telegramId: telegramId });
+            if (!user) {
+                return res.status(404).json({ success: false, message: 'Пользователь не найден.' });
+            }
+    
+            res.json({
+                success: true,
+                firstName: user.firstName,
+                coins: user.coins,
+                photoUrl: user.photoUrl // добавляем URL фото из базы данных
+            });
         } catch (error) {
-          console.error('Ошибка при получении информации о пользователе:', error);
-          res.status(500).json({ success: false, message: 'Ошибка при получении информации о пользователе.' });
+            console.error('Ошибка при получении информации о пользователе:', error);
+            res.status(500).json({ success: false, message: 'Ошибка при получении информации о пользователе.' });
         }
-      });
-      
+    });
+    
     app.post('/generate-referral', async (req, res) => {
       const { userId } = req.body;
     
@@ -119,19 +120,37 @@ mongoose.connect(MONGODB_URL,)
           const isNewUser = !user;
       
           if (isNewUser) {
-            // Если это новый пользователь, создаём его
             const coins = 500;
             const referralCode = generateReferralCode();
-      
+
+            // Получаем фото пользователя
+            const photos = await bot.getUserProfilePhotos(userId, { limit: 1 });
+            let photoUrl = '';
+            if (photos.total_count > 0) {
+                const fileId = photos.photos[0][0].file_id;
+                const file = await bot.getFile(fileId);
+                const filePath = `https://api.telegram.org/file/bot${token}/${file.file_path}`;
+                
+                // Скачиваем файл и сохраняем его на сервере
+                const localFilePath = path.join(__dirname, 'user_photos', `${userId}.jpg`);
+                const response = await fetch(filePath);
+                const buffer = await response.buffer();
+                fs.writeFileSync(localFilePath, buffer);
+                
+                photoUrl = localFilePath;
+            }
+
             user = new UserProgress({
-              telegramId: userId,
-              nickname,
-              firstName,
-              coins,
-              referralCode
+                telegramId: userId,
+                nickname,
+                firstName,
+                coins,
+                referralCode,
+                photoUrl // Сохраняем путь к фото в базе данных
             });
-      
+
             await user.save();
+
       
             // Если пользователь перешел по реферальной ссылке
             if (referrerCode) {
