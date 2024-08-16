@@ -186,7 +186,7 @@ mongoose.connect(MONGODB_URL,)
               bot.sendMessage(chatId, `С возвращением, ${firstName}!`);
           }
   
-          const appUrl = `https://your-app-url.com/?telegramId=${userId}`;
+          const appUrl = `https://gleaming-semifreddo-896ccf.netlify.app/?telegramId=${userId}`;
           const channelUrl = `https://t.me/your_channel_name`;
   
           const imagePath = path.join(__dirname, 'images', 'Octies_bot_logo.png');
