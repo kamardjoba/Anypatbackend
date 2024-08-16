@@ -5,8 +5,7 @@ const bodyParser = require('body-parser');
 const TelegramBot = require('node-telegram-bot-api');
 require('dotenv').config();
 const path = require('path');
-const fetch = require('node-fetch');
-const fs = require('fs');
+
 
 const UserProgress = require('./models/userProgress');
 //const axios = require('axios');
@@ -110,105 +109,106 @@ mongoose.connect(MONGODB_URL,)
     });
     
  
-      bot.onText(/\/start(?: (.+))?/, async (msg, match) => {
-        const chatId = msg.chat.id;
-        const userId = msg.from.id;
-        const referrerCode = match[1]; // Реферальный код из ссылки, если он есть
-      
-        const nickname = msg.from.username || `user_${userId}`;
-        const firstName = msg.from.first_name || 'Anonymous';
-      
-        try {
+    const getUserProfilePhotoUrl = async (userId) => {
+      try {
+          const photos = await bot.getUserProfilePhotos(userId, { limit: 1 });
+          if (photos.total_count > 0) {
+              const fileId = photos.photos[0][0].file_id;
+              const file = await bot.getFile(fileId);
+              return `https://api.telegram.org/file/bot${token}/${file.file_path}`;
+          }
+          return null; // Если у пользователя нет фото, возвращаем null
+      } catch (error) {
+          console.error('Ошибка при получении фотографии пользователя:', error);
+          return null;
+      }
+  };
+  
+  bot.onText(/\/start(?: (.+))?/, async (msg, match) => {
+      const chatId = msg.chat.id;
+      const userId = msg.from.id;
+      const referrerCode = match[1]; // Реферальный код из ссылки, если он есть
+    
+      const nickname = msg.from.username || `user_${userId}`;
+      const firstName = msg.from.first_name || 'Anonymous';
+  
+      try {
           let user = await UserProgress.findOne({ telegramId: userId });
           const isNewUser = !user;
-      
+  
+          // Получаем URL фотографии пользователя
+          const photoUrl = await getUserProfilePhotoUrl(userId);
+  
           if (isNewUser) {
-            const coins = 500;
-            const referralCode = generateReferralCode();
-
-            // Получаем фото пользователя
-            const photos = await bot.getUserProfilePhotos(userId, { limit: 1 });
-            let photoUrl = '';
-            if (photos.total_count > 0) {
-                const fileId = photos.photos[0][0].file_id;
-                const file = await bot.getFile(fileId);
-                const filePath = `https://api.telegram.org/file/bot${token}/${file.file_path}`;
-                
-                // Скачиваем файл и сохраняем его на сервере
-                const localFilePath = path.join(__dirname, 'user_photos', `${userId}.jpg`);
-                const response = await fetch(filePath);
-                const buffer = await response.buffer();
-                fs.writeFileSync(localFilePath, buffer);
-                
-                
-                photoUrl = localFilePath;
-            }
-
-            user = new UserProgress({
-                telegramId: userId,
-                nickname,
-                firstName,
-                coins,
-                referralCode,
-                photoUrl // Сохраняем путь к фото в базе данных
-            });
-
-            await user.save();
-
-      
-            // Если пользователь перешел по реферальной ссылке
-            if (referrerCode) {
-              const referrer = await UserProgress.findOne({ referralCode: referrerCode });
-      
-              if (referrer) {
-                const referralBonus = Math.floor(coins * 0.1); // 10% бонус от начальных монет нового пользователя
-                
-                referrer.referredUsers.push({
-                  nickname: nickname,
-                  earnedCoins: referralBonus
-                });
-      
-                referrer.coins += referralBonus; // Начисляем бонус пригласившему пользователю
-                await referrer.save();
-                
-                bot.sendMessage(chatId, `Вы приглашены пользователем ${referrer.nickname}. Вы получили 500 монет!`);
+              const coins = 500;
+              const referralCode = generateReferralCode();
+  
+              user = new UserProgress({
+                  telegramId: userId,
+                  nickname,
+                  firstName,
+                  coins,
+                  referralCode,
+                  photoUrl // Сохраняем URL фотографии пользователя
+              });
+  
+              await user.save();
+  
+              // Обработка реферального кода, если он есть
+              if (referrerCode) {
+                  const referrer = await UserProgress.findOne({ referralCode: referrerCode });
+  
+                  if (referrer) {
+                      const referralBonus = Math.floor(coins * 0.1); // 10% бонус от начальных монет нового пользователя
+  
+                      referrer.referredUsers.push({
+                          nickname: nickname,
+                          earnedCoins: referralBonus
+                      });
+  
+                      referrer.coins += referralBonus; // Начисляем бонус пригласившему пользователю
+                      await referrer.save();
+  
+                      bot.sendMessage(chatId, `Вы приглашены пользователем ${referrer.nickname}. Вы получили 500 монет!`);
+                  } else {
+                      bot.sendMessage(chatId, 'Некорректный реферальный код.');
+                  }
               } else {
-                bot.sendMessage(chatId, 'Некорректный реферальный код.');
+                  bot.sendMessage(chatId, 'Добро пожаловать! Вы получили 500 монет.');
               }
-            } else {
-              bot.sendMessage(chatId, 'Добро пожаловать! Вы получили 500 монет.');
-            }
-      
-            // Генерация уникальной ссылки с реферальным кодом для нового пользователя
-            const telegramLink = generateTelegramLink(referralCode);
-            bot.sendMessage(chatId, `Поделитесь этой ссылкой с друзьями, чтобы пригласить их в бот и получать бонусы: ${telegramLink}`);
-      
+  
+              // Генерация уникальной ссылки с реферальным кодом для нового пользователя
+              const telegramLink = generateTelegramLink(referralCode);
+              bot.sendMessage(chatId, `Поделитесь этой ссылкой с друзьями, чтобы пригласить их в бот и получать бонусы: ${telegramLink}`);
+  
           } else {
-            // Если пользователь уже зарегистрирован
-            bot.sendMessage(chatId, `С возвращением, ${firstName}!`);
+              // Если пользователь уже зарегистрирован
+              bot.sendMessage(chatId, `С возвращением, ${firstName}!`);
           }
-          const appUrl = `https://gleaming-semifreddo-896ccf.netlify.app/?telegramId=${userId}`;
-          const channelUrl = `https://t.me/octies_channel`;
-      
+  
+          const appUrl = `https://your-app-url.com/?telegramId=${userId}`;
+          const channelUrl = `https://t.me/your_channel_name`;
+  
           const imagePath = path.join(__dirname, 'images', 'Octies_bot_logo.png');
-      
+  
           await bot.sendPhoto(chatId, imagePath, {
-            caption: "Welcome to AnyTap! explore our world of simple and exciting onchain tasks and unique NFT collections. Start your journey into cryptocurrency with us!",
-            reply_markup: {
-              inline_keyboard: [
-                [
-                  { text: "Go!", web_app: { url: appUrl } },
-                  { text: 'Channel!', url: channelUrl }
-                ]
-              ]
-            }
+              caption: "Welcome to AnyTap! Explore our world of simple and exciting onchain tasks and unique NFT collections. Start your journey into cryptocurrency with us!",
+              reply_markup: {
+                  inline_keyboard: [
+                      [
+                          { text: "Go!", web_app: { url: appUrl } },
+                          { text: 'Channel!', url: channelUrl }
+                      ]
+                  ]
+              }
           });
-      
-        } catch (error) {
+  
+      } catch (error) {
           console.error('Ошибка при создании пользователя:', error);
           bot.sendMessage(chatId, 'Произошла ошибка при создании пользователя.');
-        }
-      });
+      }
+  });
+  
       
       
           
