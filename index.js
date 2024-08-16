@@ -30,7 +30,7 @@ mongoose.connect(MONGODB_URL,)
     
     const generateReferralCode = () => Math.random().toString(36).substr(2, 9);
     const generateTelegramLink = (referralCode) => {
-        return `https://t.me/AnyTap_bot?start=${referralCode}`;
+        return `https://t.me/Anytap_FrontTest_bot?start=${referralCode}`;
       };
 
 
