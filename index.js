@@ -5,6 +5,9 @@ const bodyParser = require('body-parser');
 const TelegramBot = require('node-telegram-bot-api');
 require('dotenv').config();
 const path = require('path');
+const fetch = require('node-fetch');
+const fs = require('fs');
+
 const UserProgress = require('./models/userProgress');
 //const axios = require('axios');
 MONGODB_URL = 'mongodb+srv://nazarlymar152:Nazar5002Nazar@cluster0.ht9jvso.mongodb.net/Clicker_bot?retryWrites=true&w=majority&appName=Cluster0';
@@ -136,6 +139,7 @@ mongoose.connect(MONGODB_URL,)
                 const response = await fetch(filePath);
                 const buffer = await response.buffer();
                 fs.writeFileSync(localFilePath, buffer);
+                
                 
                 photoUrl = localFilePath;
             }
