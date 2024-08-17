@@ -134,6 +134,27 @@ mongoose.connect(MONGODB_URL,)
     }
 });
 
+app.get('/user-rank', async (req, res) => {
+  const { telegramId } = req.query;
+
+  try {
+      const users = await UserProgress.find().sort({ coins: -1 });
+      const userIndex = users.findIndex(user => user.telegramId === telegramId);
+
+      if (userIndex === -1) {
+          return res.status(404).json({ success: false, message: 'Пользователь не найден.' });
+      }
+
+      const user = users[userIndex];
+      const rank = userIndex + 1; // Ранг пользователя
+
+      res.json({ success: true, user, rank });
+  } catch (error) {
+      console.error('Ошибка при получении ранга пользователя:', error);
+      res.status(500).json({ success: false, message: 'Ошибка при получении ранга пользователя.' });
+  }
+});
+
 
   bot.onText(/\/start(?: (.+))?/, async (msg, match) => {
       const chatId = msg.chat.id;
