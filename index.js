@@ -136,12 +136,14 @@ mongoose.connect(MONGODB_URL,)
 
 app.get('/user-rank', async (req, res) => {
   const { telegramId } = req.query;
+  console.log(`Получен запрос для telegramId: ${telegramId}`); // Добавьте этот лог
 
   try {
       const users = await UserProgress.find().sort({ coins: -1 });
-      const userIndex = users.findIndex(user => user.telegramId === telegramId);
+      const userIndex = users.findIndex(user => user.telegramId == telegramId); // Проверьте также, чтобы был правильный тип сравнения
 
       if (userIndex === -1) {
+          console.log(`Пользователь с telegramId: ${telegramId} не найден`); // И этот лог
           return res.status(404).json({ success: false, message: 'Пользователь не найден.' });
       }
 
