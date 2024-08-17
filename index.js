@@ -80,35 +80,40 @@ mongoose.connect(MONGODB_URL,)
     
     app.post('/add-referral', async (req, res) => {
       const { referrerCode, referredId } = req.body;
-    
+  
       try {
-        const referrer = await UserProgress.findOne({ referralCode: referrerCode });
-        if (!referrer) {
-          return res.status(404).json({ success: false, message: 'Пригласивший пользователь не найден.' });
-        }
-    
-        const referredUser = await UserProgress.findOne({ telegramId: referredId });
-        if (referredUser) {
-          return res.status(400).json({ success: false, message: 'Пользователь уже зарегистрирован.' });
-        }
-    
-        const newUser = new UserProgress({ telegramId: referredId, coins: 500 });
-        await newUser.save();
-    
-        const referralBonus = Math.floor(newUser.coins * 0.1);
-    
-        referrer.referredUsers.push({ nickname: `user_${referredId}`, earnedCoins: referralBonus });
-        referrer.coins += referralBonus;
-        await referrer.save();
-    
-        res.json({ success: true, message: 'Реферал добавлен и монеты начислены.' });
+          const referrer = await UserProgress.findOne({ referralCode: referrerCode });
+          if (!referrer) {
+              return res.status(404).json({ success: false, message: 'Пригласивший пользователь не найден.' });
+          }
+  
+          const referredUser = await UserProgress.findOne({ telegramId: referredId });
+          if (referredUser) {
+              return res.status(400).json({ success: false, message: 'Пользователь уже зарегистрирован.' });
+          }
+  
+          const newUser = new UserProgress({ telegramId: referredId, coins: 500 });
+          await newUser.save();
+  
+          const referralBonus = Math.floor(newUser.coins * 0.1);
+          const referredUserPhoto = await getUserProfilePhotoUrl(referredId); // Получаем фото нового пользователя
+  
+          referrer.referredUsers.push({
+              nickname: `user_${referredId}`,
+              earnedCoins: referralBonus,
+              photoUrl: referredUserPhoto // Сохраняем фото нового пользователя
+          });
+  
+          referrer.coins += referralBonus;
+          await referrer.save();
+  
+          res.json({ success: true, message: 'Реферал добавлен и монеты начислены.' });
       } catch (error) {
-        console.error('Ошибка при добавлении реферала:', error);
-        res.status(500).json({ success: false, message: 'Ошибка при добавлении реферала.' });
+          console.error('Ошибка при добавлении реферала:', error);
+          res.status(500).json({ success: false, message: 'Ошибка при добавлении реферала.' });
       }
-    });
-    
- 
+  });
+  
     const getUserProfilePhotoUrl = async (userId) => {
       try {
           const photos = await bot.getUserProfilePhotos(userId, { limit: 1 });
@@ -160,12 +165,10 @@ app.get('/user-rank', async (req, res) => {
 
 app.get('/user-referrals', async (req, res) => {
   const { telegramId } = req.query;
-  console.log(`Запрос рефералов для telegramId: ${telegramId}`); // Лог для отладки
 
   try {
       const user = await UserProgress.findOne({ telegramId: telegramId });
       if (!user) {
-          console.log(`Пользователь с telegramId: ${telegramId} не найден`);
           return res.status(404).json({ success: false, message: 'Пользователь не найден.' });
       }
 

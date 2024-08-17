@@ -25,12 +25,13 @@ const UserSchema = new mongoose.Schema({
     },
     referredUsers: [{
       nickname: String,
-      earnedCoins: Number
+      earnedCoins: Number,
+      photoUrl: String // Добавляем поле для фото рефералов
     }],
     photoUrl: {
       type: String,
       required: false
-    } // Новый путь для фото
+    }
 });
 
 const UserProgress = mongoose.model('Anytap', UserSchema);
