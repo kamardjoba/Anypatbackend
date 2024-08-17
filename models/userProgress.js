@@ -26,7 +26,12 @@ const UserSchema = new mongoose.Schema({
     referredUsers: [{
       nickname: String,
       earnedCoins: Number,
-      photoUrl: String // Добавляем поле для фото рефералов
+      photoUrl: String,
+      coins: { // Добавляем поле для хранения количества монет у реферала
+          type: Number,
+          required: true,
+          default: 500 // или любое другое стартовое значение
+      }
     }],
     photoUrl: {
       type: String,
