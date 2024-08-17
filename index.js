@@ -158,6 +158,25 @@ app.get('/user-rank', async (req, res) => {
 });
 
 
+app.get('/user-referrals', async (req, res) => {
+  const { telegramId } = req.query;
+  console.log(`Запрос рефералов для telegramId: ${telegramId}`); // Лог для отладки
+
+  try {
+      const user = await UserProgress.findOne({ telegramId: telegramId });
+      if (!user) {
+          console.log(`Пользователь с telegramId: ${telegramId} не найден`);
+          return res.status(404).json({ success: false, message: 'Пользователь не найден.' });
+      }
+
+      res.json({ success: true, referrals: user.referredUsers });
+  } catch (error) {
+      console.error('Ошибка при получении списка рефералов:', error);
+      res.status(500).json({ success: false, message: 'Ошибка при получении списка рефералов.' });
+  }
+});
+
+
   bot.onText(/\/start(?: (.+))?/, async (msg, match) => {
       const chatId = msg.chat.id;
       const userId = msg.from.id;
