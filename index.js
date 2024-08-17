@@ -169,7 +169,7 @@ app.get('/user-referrals', async (req, res) => {
           return res.status(404).json({ success: false, message: 'Пользователь не найден.' });
       }
 
-      res.json({ success: true, referrals: user.referredUsers });
+      res.json({ success: true, referrals: user.referredUsers, referralCode });
   } catch (error) {
       console.error('Ошибка при получении списка рефералов:', error);
       res.status(500).json({ success: false, message: 'Ошибка при получении списка рефералов.' });
