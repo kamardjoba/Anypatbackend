@@ -124,6 +124,17 @@ mongoose.connect(MONGODB_URL,)
       }
   };
   
+  app.get('/leaderboard', async (req, res) => {
+    try {
+        const users = await UserProgress.find().sort({ coins: -1 }).limit(10); // Находим топ-10 пользователей
+        res.json(users);
+    } catch (error) {
+        console.error('Ошибка при получении лидерборда:', error);
+        res.status(500).json({ success: false, message: 'Ошибка при получении лидерборда.' });
+    }
+});
+
+
   bot.onText(/\/start(?: (.+))?/, async (msg, match) => {
       const chatId = msg.chat.id;
       const userId = msg.from.id;
