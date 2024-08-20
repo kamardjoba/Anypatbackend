@@ -207,6 +207,33 @@ app.post('/update-coins', async (req, res) => {
   }
 });
 
+app.post('/record-transaction', async (req, res) => {
+    const { userId } = req.body;
+
+    try {
+        // Находим пользователя по его ID
+        const user = await UserProgress.findOne({ telegramId: userId });
+        
+        if (!user) {
+            return res.status(404).json({ success: false, message: 'Пользователь не найден.' });
+        }
+
+        // Увеличиваем счетчик транзакций
+        const transactionCount = await UserProgress.countDocuments();
+        user.transactionNumber = transactionCount + 1;
+
+        // Сохраняем изменения в базе данных
+        await user.save();
+
+        // Возвращаем номер транзакции
+        res.json({ success: true, transactionNumber: user.transactionNumber });
+    } catch (error) {
+        console.error('Ошибка при записи транзакции:', error);
+        res.status(500).json({ success: false, message: 'Ошибка при записи транзакции.' });
+    }
+});
+
+
 
 app.get('/user-referrals', async (req, res) => {
   const { telegramId } = req.query;
