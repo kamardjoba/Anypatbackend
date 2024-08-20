@@ -1,3 +1,5 @@
+const mongoose = require('mongoose');
+
 const UserSchema = new mongoose.Schema({
   telegramId: {
     type: Number,
@@ -62,7 +64,8 @@ const UserSchema = new mongoose.Schema({
     default: 0 
   }
 });
-
-const UserProgress = mongoose.model('Testforeveryone', UserSchema);
+const UserProgress = mongoose.model('Anytap', UserSchema);
 
 module.exports = UserProgress;
+
+
