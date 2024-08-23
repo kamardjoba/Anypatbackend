@@ -116,6 +116,7 @@ mongoose.connect(MONGODB_URL,)
                 isSubscribedToChannel: user.isSubscribedToChannel, 
                 isSubscribedToOctiesChannel: user.isSubscribedToOctiesChannel, 
                 isSubscribedToTwitter: user.isSubscribedToTwitter,
+                isSubscribedToInstagram: user.isSubscribedToInstagram,
                 coins: user.coins 
             });
     
