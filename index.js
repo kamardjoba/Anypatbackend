@@ -80,9 +80,10 @@ mongoose.connect(MONGODB_URL,)
 
     app.post('/check-subscription', async (req, res) => {
         const { telegramId } = req.body;
+        const channelId = -1002208556196; // замените на реальный ID вашего канала
     
         try {
-            const chatMember = await bot.getChatMember('@any_tap', telegramId);
+            const chatMember = await bot.getChatMember(channelId, telegramId);
     
             if (chatMember.status === 'member' || chatMember.status === 'administrator' || chatMember.status === 'creator') {
                 const user = await UserProgress.findOne({ telegramId });
@@ -102,6 +103,7 @@ mongoose.connect(MONGODB_URL,)
             res.status(500).json({ success: false, message: 'Ошибка при проверке подписки.' });
         }
     });
+    
     
     
     app.post('/add-referral', async (req, res) => {
