@@ -105,10 +105,7 @@ mongoose.connect(MONGODB_URL,)
                 }
             }
 
-            if (!user.isSubscribedToTwitter) {
-                user.coins += 200; // начисляем 200 монет за подписку на Twitter
-                user.isSubscribedToTwitter = true; // помечаем, что пользователь подписан на Twitter
-            }
+           
     
             if (user) {
                 await user.save(); // сохраняем изменения в базе данных
