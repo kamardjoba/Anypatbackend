@@ -77,6 +77,32 @@ mongoose.connect(MONGODB_URL,)
         res.status(500).json({ success: false, message: 'Ошибка при генерации реферального кода.' });
       }
     });
+
+    app.post('/check-subscription', async (req, res) => {
+        const { telegramId } = req.body;
+    
+        try {
+            const chatMember = await bot.getChatMember('@any_tap', telegramId);
+    
+            if (chatMember.status === 'member' || chatMember.status === 'administrator' || chatMember.status === 'creator') {
+                const user = await UserProgress.findOne({ telegramId });
+    
+                if (user && !user.isSubscribedToChannel) {
+                    user.coins += 200; // начисляем 200 монет
+                    user.isSubscribedToChannel = true; // помечаем, что пользователь подписан и монеты уже начислены
+                    await user.save();
+                }
+    
+                return res.json({ success: true, isSubscribed: true, coins: user.coins });
+            } else {
+                return res.json({ success: false, isSubscribed: false });
+            }
+        } catch (error) {
+            console.error('Ошибка при проверке подписки:', error);
+            res.status(500).json({ success: false, message: 'Ошибка при проверке подписки.' });
+        }
+    });
+    
     
     app.post('/add-referral', async (req, res) => {
       const { referrerCode, referredId } = req.body;
@@ -207,31 +233,6 @@ app.post('/update-coins', async (req, res) => {
   }
 });
 
-app.post('/record-transaction', async (req, res) => {
-    const { userId } = req.body;
-
-    try {
-        // Находим пользователя по его ID
-        const user = await UserProgress.findOne({ telegramId: userId });
-        
-        if (!user) {
-            return res.status(404).json({ success: false, message: 'Пользователь не найден.' });
-        }
-
-        // Увеличиваем счетчик транзакций
-        const transactionCount = await UserProgress.countDocuments();
-        user.transactionNumber = transactionCount + 1;
-
-        // Сохраняем изменения в базе данных
-        await user.save();
-
-        // Возвращаем номер транзакции
-        res.json({ success: true, transactionNumber: user.transactionNumber });
-    } catch (error) {
-        console.error('Ошибка при записи транзакции:', error);
-        res.status(500).json({ success: false, message: 'Ошибка при записи транзакции.' });
-    }
-});
 
 
 
