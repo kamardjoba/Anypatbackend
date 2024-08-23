@@ -78,31 +78,28 @@ mongoose.connect(MONGODB_URL,)
       }
     });
 
-    app.post('/check-subscription', async (req, res) => {
-        const { telegramId } = req.body;
-        const channelId = -1002246870197; // замените на реальный ID вашего канала
+    useEffect(() => {
+        const urlParams = new URLSearchParams(window.location.search);
+        const telegramId = urlParams.get('telegramId');
     
-        try {
-            const chatMember = await bot.getChatMember(channelId, telegramId);
-    
-            if (chatMember.status === 'member' || chatMember.status === 'administrator' || chatMember.status === 'creator') {
-                const user = await UserProgress.findOne({ telegramId });
-    
-                if (user && !user.isSubscribedToChannel) {
-                    user.coins += 200; // начисляем 200 монет
-                    user.isSubscribedToChannel = true; // помечаем, что пользователь подписан и монеты уже начислены
-                    await user.save();
+        if (telegramId) {
+            const checkSubscription = async () => {
+                try {
+                    const response = await axios.post('https://anypatbackend-production.up.railway.app/check-subscription', { telegramId });
+                    if (response.data.success && response.data.isSubscribed) {
+                        setTgChanel_val(true);
+                    }
+                } catch (error) {
+                    console.error('Ошибка при проверке подписки:', error);
                 }
-    
-                return res.json({ success: true, isSubscribed: true, coins: user.coins });
-            } else {
-                return res.json({ success: false, isSubscribed: false });
-            }
-        } catch (error) {
-            console.error('Ошибка при проверке подписки:', error);
-            res.status(500).json({ success: false, message: 'Ошибка при проверке подписки.' });
+            };
+        
+            checkSubscription();
+        } else {
+            console.error('Не удалось получить telegramId из URL');
         }
-    });
+    }, []);
+    
     
     
     
