@@ -100,9 +100,14 @@ mongoose.connect(MONGODB_URL,)
             const chatMemberOctiesChannel = await bot.getChatMember(octiesChannelId, telegramId);
             if (chatMemberOctiesChannel.status === 'member' || chatMemberOctiesChannel.status === 'administrator' || chatMemberOctiesChannel.status === 'creator') {
                 if (user && !user.isSubscribedToOctiesChannel) {
-                    user.coins += 100; // начисляем 100 монет за подписку на второй канал
+                    user.coins += 200; // начисляем 100 монет за подписку на второй канал
                     user.isSubscribedToOctiesChannel = true; // помечаем, что пользователь подписан на второй канал
                 }
+            }
+
+            if (!user.isSubscribedToTwitter) {
+                user.coins += 200; // начисляем 200 монет за подписку на Twitter
+                user.isSubscribedToTwitter = true; // помечаем, что пользователь подписан на Twitter
             }
     
             if (user) {
@@ -113,12 +118,34 @@ mongoose.connect(MONGODB_URL,)
                 success: true, 
                 isSubscribedToChannel: user.isSubscribedToChannel, 
                 isSubscribedToOctiesChannel: user.isSubscribedToOctiesChannel, 
+                isSubscribedToTwitter: user.isSubscribedToTwitter,
                 coins: user.coins 
             });
     
         } catch (error) {
             console.error('Ошибка при проверке подписки:', error);
             res.status(500).json({ success: false, message: 'Ошибка при проверке подписки.' });
+        }
+    });
+    
+
+    app.post('/update-twitter-subscription', async (req, res) => {
+        const { telegramId } = req.body;
+    
+        try {
+            const user = await UserProgress.findOne({ telegramId });
+    
+            if (user && !user.isSubscribedToTwitter) {
+                user.coins += 200; // Начисляем 200 монет за подписку на Twitter
+                user.isSubscribedToTwitter = true; // Помечаем, что пользователь подписан на Twitter
+                await user.save(); // Сохраняем изменения в базе данных
+            }
+    
+            return res.json({ success: true, isSubscribedToTwitter: user.isSubscribedToTwitter, coins: user.coins });
+    
+        } catch (error) {
+            console.error('Ошибка при обновлении подписки на Twitter:', error);
+            res.status(500).json({ success: false, message: 'Ошибка при обновлении подписки на Twitter.' });
         }
     });
     
