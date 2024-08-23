@@ -35,6 +35,10 @@ const UserSchema = new mongoose.Schema({
       type: Boolean,
       default: false
     },
+    isSubscribedToInstagram: {  // Новое поле для подписки на Twitter
+      type: Boolean,
+      default: false
+    },
     referredUsers: [{
       nickname: String,
       earnedCoins: Number,
