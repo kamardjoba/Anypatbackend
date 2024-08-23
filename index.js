@@ -80,7 +80,7 @@ mongoose.connect(MONGODB_URL,)
 
     app.post('/check-subscription', async (req, res) => {
         const { telegramId } = req.body;
-        const channelId = -1002208556196; // замените на реальный ID вашего канала
+        const channelId = -1002246870197; // замените на реальный ID вашего канала
     
         try {
             const chatMember = await bot.getChatMember(channelId, telegramId);
