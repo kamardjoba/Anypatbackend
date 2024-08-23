@@ -80,24 +80,42 @@ mongoose.connect(MONGODB_URL,)
 
     app.post('/check-subscription', async (req, res) => {
         const { telegramId } = req.body;
-        const channelId = -1002246870197; // замените на реальный ID вашего канала
+        
+        const channelId = -1002246870197; // ID первого канала
+        const octiesChannelId = -1002088709942; // ID второго канала
     
         try {
-            const chatMember = await bot.getChatMember(channelId, telegramId);
-    
-            if (chatMember.status === 'member' || chatMember.status === 'administrator' || chatMember.status === 'creator') {
-                const user = await UserProgress.findOne({ telegramId });
-    
+            const user = await UserProgress.findOne({ telegramId });
+            
+            // Проверка подписки на первый канал
+            const chatMemberChannel = await bot.getChatMember(channelId, telegramId);
+            if (chatMemberChannel.status === 'member' || chatMemberChannel.status === 'administrator' || chatMemberChannel.status === 'creator') {
                 if (user && !user.isSubscribedToChannel) {
-                    user.coins += 200; // начисляем 200 монет
-                    user.isSubscribedToChannel = true; // помечаем, что пользователь подписан и монеты уже начислены
-                    await user.save();
+                    user.coins += 200; // начисляем 200 монет за подписку на первый канал
+                    user.isSubscribedToChannel = true; // помечаем, что пользователь подписан на первый канал
                 }
-    
-                return res.json({ success: true, isSubscribed: true, coins: user.coins });
-            } else {
-                return res.json({ success: false, isSubscribed: false });
             }
+    
+            // Проверка подписки на второй канал
+            const chatMemberOctiesChannel = await bot.getChatMember(octiesChannelId, telegramId);
+            if (chatMemberOctiesChannel.status === 'member' || chatMemberOctiesChannel.status === 'administrator' || chatMemberOctiesChannel.status === 'creator') {
+                if (user && !user.isSubscribedToOctiesChannel) {
+                    user.coins += 100; // начисляем 100 монет за подписку на второй канал
+                    user.isSubscribedToOctiesChannel = true; // помечаем, что пользователь подписан на второй канал
+                }
+            }
+    
+            if (user) {
+                await user.save(); // сохраняем изменения в базе данных
+            }
+    
+            return res.json({ 
+                success: true, 
+                isSubscribedToChannel: user.isSubscribedToChannel, 
+                isSubscribedToOctiesChannel: user.isSubscribedToOctiesChannel, 
+                coins: user.coins 
+            });
+    
         } catch (error) {
             console.error('Ошибка при проверке подписки:', error);
             res.status(500).json({ success: false, message: 'Ошибка при проверке подписки.' });

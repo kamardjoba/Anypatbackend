@@ -27,6 +27,10 @@ const UserSchema = new mongoose.Schema({
       type: Boolean,
       default: false
     },
+    isSubscribedToOctiesChannel: {  // Новое поле для второго канала
+      type: Boolean,
+      default: false
+    },
     referredUsers: [{
       nickname: String,
       earnedCoins: Number,
