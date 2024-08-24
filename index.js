@@ -12,7 +12,7 @@ const UserProgress = require('./models/userProgress');
 MONGODB_URL = 'mongodb+srv://nazarlymar152:Nazar5002Nazar@cluster0.ht9jvso.mongodb.net/Clicker_bot?retryWrites=true&w=majority&appName=Cluster0';
 const app = express();
 const port = process.env.PORT || 3001;
-const token = '6970022144:AAHELhZhCMW5dqzB-MzkiVOwxnCVtzCJLTA';
+const token = '7124930288:AAGttBe0D8AlxtViWrzECUgQts3-QM1DHus';
 const bot = new TelegramBot(token, { polling: true });
 
 const corsOptions = {
