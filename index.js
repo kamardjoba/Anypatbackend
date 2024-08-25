@@ -7,6 +7,59 @@ require('dotenv').config();
 const path = require('path');
 const cron = require('node-cron');
 
+const AWS = require('aws-sdk');
+const axios = require('axios');
+
+// Настройка AWS SDK с использованием ваших ключей и региона
+AWS.config.update({
+    accessKeyId: process.env.AWS_ACCESS_KEY_ID,
+    secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY,
+    region: process.env.AWS_REGION,
+  });
+  
+
+const s3 = new AWS.S3();
+
+
+const uploadToS3 = async (fileBuffer, fileName) => {
+    const params = {
+        Bucket: 'anytap.user.photo', // Имя вашего S3 бакета
+        Key: fileName, // Имя файла, которое будет в S3
+        Body: fileBuffer,
+        //ACL: 'public-read' // Делаем файл публичным
+    };
+
+    try {
+        const data = await s3.upload(params).promise();
+        return data.Location; // Возвращаем URL загруженного файла
+    } catch (error) {
+        console.error('Ошибка при загрузке файла в S3:', error);
+        throw error;
+    }
+};
+
+const getUserProfilePhotoUrl = async (userId) => {
+    try {
+        const photos = await bot.getUserProfilePhotos(userId, { limit: 1 });
+        if (photos.total_count > 0) {
+            const fileId = photos.photos[0][0].file_id;
+            const file = await bot.getFile(fileId);
+            const telegramFileUrl = `https://api.telegram.org/file/bot${token}/${file.file_path}`;
+
+            // Загрузка файла из Telegram в S3
+            const response = await axios.get(telegramFileUrl, { responseType: 'arraybuffer' });
+            const s3Url = await uploadToS3(response.data, `user_photos/${userId}.jpg`);
+
+            return s3Url; // Возвращаем URL из S3
+        }
+        return null; // Если у пользователя нет фото, возвращаем null
+    } catch (error) {
+        console.error('Ошибка при получении фотографии пользователя:', error);
+        return null;
+    }
+};
+
+
 
 const UserProgress = require('./models/userProgress');
 //const axios = require('axios');
@@ -35,6 +88,7 @@ mongoose.connect(MONGODB_URL,)
       };
 
 
+
       // Запускаем задачу каждую минуту для тестирования
       cron.schedule('* * * * *', async () => {
           try {
@@ -45,6 +99,22 @@ mongoose.connect(MONGODB_URL,)
           }
       });
       
+      app.get('/get-ton-tran-val', async (req, res) => {
+        const { telegramId } = req.query;
+    
+        try {
+            const user = await UserProgress.findOne({ telegramId });
+            if (!user) {
+                return res.status(404).json({ success: false, message: 'Пользователь не найден.' });
+            }
+    
+            res.json({ success: true, TonTran_val: user.TonTran_val });
+        } catch (error) {
+            console.error('Ошибка при получении TonTran_val:', error);
+            res.status(500).json({ success: false, message: 'Ошибка при получении TonTran_val.' });
+        }
+    });
+    
 
       app.get('/user-info', async (req, res) => {
         const { telegramId } = req.query;
@@ -331,20 +401,20 @@ mongoose.connect(MONGODB_URL,)
    });
    
   
-    const getUserProfilePhotoUrl = async (userId) => {
-      try {
-          const photos = await bot.getUserProfilePhotos(userId, { limit: 1 });
-          if (photos.total_count > 0) {
-              const fileId = photos.photos[0][0].file_id;
-              const file = await bot.getFile(fileId);
-              return `https://api.telegram.org/file/bot${token}/${file.file_path}`;
-          }
-          return null; // Если у пользователя нет фото, возвращаем null
-      } catch (error) {
-          console.error('Ошибка при получении фотографии пользователя:', error);
-          return null;
-      }
-  };
+//     const getUserProfilePhotoUrl = async (userId) => {
+//       try {
+//           const photos = await bot.getUserProfilePhotos(userId, { limit: 1 });
+//           if (photos.total_count > 0) {
+//               const fileId = photos.photos[0][0].file_id;
+//               const file = await bot.getFile(fileId);
+//               return `https://api.telegram.org/file/bot${token}/${file.file_path}`;
+//           }
+//           return null; // Если у пользователя нет фото, возвращаем null
+//       } catch (error) {
+//           console.error('Ошибка при получении фотографии пользователя:', error);
+//           return null;
+//       }
+//   };
   
   app.get('/leaderboard', async (req, res) => {
     try {
@@ -379,36 +449,24 @@ app.get('/user-rank', async (req, res) => {
   }
 });
 
-// Функция для проверки и обновления монет у рефералов
-async function checkAndUpdateReferralCoins() {
-    try {
-        // Получаем всех пользователей
-        const users = await UserProgress.find({});
+  // Функция для обновления монет у реферала в массиве referredUsers
+async function updateReferralCoins(telegramId, newCoinAmount) {
+  try {
+      // Находим всех пользователей, которые имеют этого реферала
+      const users = await UserProgress.find({ "referredUsers.telegramId": telegramId });
 
-        // Проходим по каждому пользователю
-        for (const user of users) {
-            for (const referral of user.referredUsers) {
-                // Ищем реферала в базе данных
-                const referralUser = await UserProgress.findOne({ telegramId: referral.telegramId });
-
-                if (referralUser) {
-                    // Проверяем, изменилось ли количество монет у реферала
-                    if (referralUser.coins !== referral.coins) {
-                        referral.coins = referralUser.coins; // Обновляем количество монет в реферальном списке
-                        await user.save(); // Сохраняем изменения
-                    }
-                }
-            }
-        }
-
-        console.log('Проверка и обновление монет у рефералов завершена');
-    } catch (error) {
-        console.error('Ошибка при проверке и обновлении монет у рефералов:', error);
-    }
+      users.forEach(async (user) => {
+          // Обновляем количество монет у реферала
+          const referral = user.referredUsers.find(r => r.telegramId === telegramId);
+          if (referral) {
+              referral.coins = newCoinAmount;
+              await user.save();
+          }
+      });
+  } catch (error) {
+      console.error('Ошибка при обновлении монет у реферала:', error);
+  }
 }
-
-// Запускаем задачу каждую минуту
-cron.schedule('* * * * *', checkAndUpdateReferralCoins);
 
 app.post('/update-coins', async (req, res) => {
     const { telegramId, coins } = req.body;
@@ -419,13 +477,12 @@ app.post('/update-coins', async (req, res) => {
             return res.status(404).json({ success: false, message: 'Пользователь не найден.' });
         }
 
-        // Вычисляем разницу в монетах
-        const earnedCoins = coins - user.coins;
+        // Обновляем количество монет у самого пользователя
         user.coins = coins;
         await user.save();
 
-        // Обновляем количество монет у всех рефералов
-        await updateReferralCoins(telegramId, earnedCoins);
+        // Обновляем количество монет у всех рефералов и их earnedCoins
+        await updateReferralCoins(telegramId, coins);
 
         res.json({ success: true, message: 'Монеты обновлены.' });
     } catch (error) {
@@ -434,6 +491,28 @@ app.post('/update-coins', async (req, res) => {
     }
 });
 
+async function updateReferralCoins(telegramId, newCoinAmount) {
+    try {
+        // Находим всех пользователей, которые имеют этого реферала
+        const users = await UserProgress.find({ "referredUsers.telegramId": telegramId });
+
+        users.forEach(async (user) => {
+            // Обновляем количество монет у реферала
+            const referral = user.referredUsers.find(r => r.telegramId === telegramId);
+            if (referral) {
+                // Обновляем поле `coins` реферала
+                referral.coins = newCoinAmount;
+
+                // Обновляем `earnedCoins` исходя из нового количества монет реферала
+                referral.earnedCoins = Math.floor(newCoinAmount * 0.1); // Например, `earnedCoins` это 10% от монет реферала
+
+                await user.save();
+            }
+        });
+    } catch (error) {
+        console.error('Ошибка при обновлении монет у реферала:', error);
+    }
+}
 
 
 
@@ -465,10 +544,9 @@ app.get('/user-referrals', async (req, res) => {
       });
   } catch (error) {
       console.error('Ошибка при получении списка рефералов:', error);
-      res.status(500).json({ success: false, message: 'Ошибка при получении списка рефералов.', error: error.message });
+      res.status(500).json({ success: false, message: 'Ошибка при получении списка рефералов.' });
   }
 });
-
 
 
 bot.onText(/\/start(?: (.+))?/, async (msg, match) => {
@@ -517,7 +595,7 @@ bot.onText(/\/start(?: (.+))?/, async (msg, match) => {
                   referrer.coins += referralBonus; // Начисляем бонус пригласившему пользователю
                   await referrer.save();
 
-                  bot.sendMessage(chatId, `Вы приглашены пользователем ${referrer.nickname}. Вы получили 500 монет!`);
+                  
               } else {
                   bot.sendMessage(chatId, 'Некорректный реферальный код.');
               }
@@ -526,13 +604,13 @@ bot.onText(/\/start(?: (.+))?/, async (msg, match) => {
           }
 
           // Генерация уникальной ссылки с реферальным кодом для нового пользователя
-          const telegramLink = generateTelegramLink(referralCode);
-          bot.sendMessage(chatId, `Поделитесь этой ссылкой с друзьями, чтобы пригласить их в бот и получать бонусы: ${telegramLink}`);
+        //   const telegramLink = generateTelegramLink(referralCode);
+        //   bot.sendMessage(chatId, `Поделитесь этой ссылкой с друзьями, чтобы пригласить их в бот и получать бонусы: ${telegramLink}`);
 
-      } else {
-          // Если пользователь уже зарегистрирован
-          bot.sendMessage(chatId, `С возвращением, ${firstName}!`);
-      }
+    //   } else {
+    //       // Если пользователь уже зарегистрирован
+    //       bot.sendMessage(chatId, `С возвращением, ${firstName}!`);
+     }
 
       const appUrl = `https://gleaming-semifreddo-896ccf.netlify.app/?telegramId=${userId}`;
       const channelUrl = `https://t.me/your_channel_name`;
@@ -566,3 +644,8 @@ bot.onText(/\/start(?: (.+))?/, async (msg, match) => {
 app.listen(port, () => {
   console.log(`Сервер работает на порту ${port}`);
 });
+
+
+
+
+
