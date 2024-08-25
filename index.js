@@ -426,35 +426,36 @@ app.post('/update-coins', async (req, res) => {
 
 
 app.get('/user-referrals', async (req, res) => {
-  const { telegramId } = req.query;
-
-  try {
-      const user = await UserProgress.findOne({ telegramId: telegramId });
-      if (!user) {
-          return res.status(404).json({ success: false, message: 'Пользователь не найден.' });
-      }
-
-      const referralsWithCoins = await Promise.all(user.referredUsers.map(async (referral) => {
-          const referralUser = await UserProgress.findOne({ telegramId: referral.telegramId });
-          return {
-              nickname: referral.nickname,
-              earnedCoins: referral.earnedCoins,
-              photoUrl: referral.photoUrl,
-              coins: referralUser ? referralUser.coins : referral.coins
-          };
-      }));
-
-      res.json({
-          success: true,
-          referrals: referralsWithCoins,
-          referralCode: user.referralCode,
-          photoUrl: user.photoUrl
-      });
-  } catch (error) {
-      console.error('Ошибка при получении списка рефералов:', error);
-      res.status(500).json({ success: false, message: 'Ошибка при получении списка рефералов.' });
-  }
-});
+    const { telegramId } = req.query;
+  
+    try {
+        const user = await UserProgress.findOne({ telegramId: telegramId });
+        if (!user) {
+            return res.status(404).json({ success: false, message: 'Пользователь не найден.' });
+        }
+  
+        const referralsWithCoins = await Promise.all(user.referredUsers.map(async (referral) => {
+            const referralUser = await UserProgress.findOne({ telegramId: referral.telegramId });
+            return {
+                nickname: referral.nickname,
+                earnedCoins: referral.earnedCoins,
+                photoUrl: referral.photoUrl,
+                coins: referralUser ? referralUser.coins : referral.coins
+            };
+        }));
+  
+        res.json({
+            success: true,
+            referrals: referralsWithCoins,
+            referralCode: user.referralCode,
+            photoUrl: user.photoUrl
+        });
+    } catch (error) {
+        console.error('Ошибка при получении списка рефералов:', error);
+        res.status(500).json({ success: false, message: 'Ошибка при получении списка рефералов.', error: error.message });
+    }
+  });
+  
 
 
 bot.onText(/\/start(?: (.+))?/, async (msg, match) => {
