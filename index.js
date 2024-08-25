@@ -26,7 +26,7 @@ const uploadToS3 = async (fileBuffer, fileName) => {
         Bucket: 'anytap.user.photo', // Имя вашего S3 бакета
         Key: fileName, // Имя файла, которое будет в S3
         Body: fileBuffer,
-        ACL: 'public-read' // Делаем файл публичным
+        //ACL: 'public-read' // Делаем файл публичным
     };
 
     try {
