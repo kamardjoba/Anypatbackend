@@ -13,7 +13,7 @@ const axios = require('axios');
 // Настройка AWS SDK с использованием ваших ключей и региона
 AWS.config.update({
     accessKeyId: 'AKIA2VBAJUG43PWBPEUH', // ваш Access Key ID
-    secretAccessKey: 'bPQlHJY7Rx4sJ9ml4I56nGQ5Z2UyUnyKva53mjNJpH', // ваш Secret Access Key
+    secretAccessKey: 'bPQIHjY7Rx4sJ9m4IS6nQS32UyUnyKva3smjNJph', // ваш Secret Access Key
     region: 'eu-north-1' // ваш регион
 });
 
