@@ -39,6 +39,10 @@ const UserSchema = new mongoose.Schema({
       type: Boolean,
       default: false
     },
+    TonTran_val: { 
+      type: Boolean, 
+      default: false 
+  },
     referredUsers: [{
       nickname: String,
       earnedCoins: Number,

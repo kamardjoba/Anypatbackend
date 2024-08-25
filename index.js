@@ -5,6 +5,7 @@ const bodyParser = require('body-parser');
 const TelegramBot = require('node-telegram-bot-api');
 require('dotenv').config();
 const path = require('path');
+const cron = require('node-cron');
 
 
 const UserProgress = require('./models/userProgress');
@@ -33,6 +34,18 @@ mongoose.connect(MONGODB_URL,)
         return `https://t.me/AnyTap_bot?start=${referralCode}`;
       };
 
+      const cron = require('node-cron');
+
+      // Запускаем задачу каждую минуту для тестирования
+      cron.schedule('* * * * *', async () => {
+          try {
+              await UserProgress.updateMany({}, { $set: { TonTran_val: false } });
+              console.log('Сброс TonTran_val выполнен (тестирование каждую минуту)');
+          } catch (error) {
+              console.error('Ошибка при сбросе TonTran_val:', error);
+          }
+      });
+      
 
       app.get('/user-info', async (req, res) => {
         const { telegramId } = req.query;
