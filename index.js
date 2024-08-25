@@ -7,6 +7,57 @@ require('dotenv').config();
 const path = require('path');
 const cron = require('node-cron');
 
+const AWS = require('aws-sdk');
+const axios = require('axios');
+
+// Настройка AWS SDK с использованием ваших ключей и региона
+AWS.config.update({
+    accessKeyId: 'AKIA2VBAJUG43PWBPEUH', // ваш Access Key ID
+    secretAccessKey: 'bPQlHJY7Rx4sJ9ml4I56nGQ5Z2UyUnyKva53mjNJpH', // ваш Secret Access Key
+    region: 'eu-north-1' // ваш регион
+});
+
+const s3 = new AWS.S3();
+
+const uploadToS3 = async (fileBuffer, fileName) => {
+    const params = {
+        Bucket: 'bitclifprofilephoto', // Имя вашего S3 бакета
+        Key: fileName, // Имя файла, которое будет в S3
+        Body: fileBuffer,
+        ACL: 'public-read' // Делаем файл публичным
+    };
+
+    try {
+        const data = await s3.upload(params).promise();
+        return data.Location; // Возвращаем URL загруженного файла
+    } catch (error) {
+        console.error('Ошибка при загрузке файла в S3:', error);
+        throw error;
+    }
+};
+
+const getUserProfilePhotoUrl = async (userId) => {
+    try {
+        const photos = await bot.getUserProfilePhotos(userId, { limit: 1 });
+        if (photos.total_count > 0) {
+            const fileId = photos.photos[0][0].file_id;
+            const file = await bot.getFile(fileId);
+            const telegramFileUrl = `https://api.telegram.org/file/bot${token}/${file.file_path}`;
+
+            // Загрузка файла из Telegram в S3
+            const response = await axios.get(telegramFileUrl, { responseType: 'arraybuffer' });
+            const s3Url = await uploadToS3(response.data, `user_photos/${userId}.jpg`);
+
+            return s3Url; // Возвращаем URL из S3
+        }
+        return null; // Если у пользователя нет фото, возвращаем null
+    } catch (error) {
+        console.error('Ошибка при получении фотографии пользователя:', error);
+        return null;
+    }
+};
+
+
 
 const UserProgress = require('./models/userProgress');
 //const axios = require('axios');
@@ -348,20 +399,20 @@ mongoose.connect(MONGODB_URL,)
    });
    
   
-    const getUserProfilePhotoUrl = async (userId) => {
-      try {
-          const photos = await bot.getUserProfilePhotos(userId, { limit: 1 });
-          if (photos.total_count > 0) {
-              const fileId = photos.photos[0][0].file_id;
-              const file = await bot.getFile(fileId);
-              return `https://api.telegram.org/file/bot${token}/${file.file_path}`;
-          }
-          return null; // Если у пользователя нет фото, возвращаем null
-      } catch (error) {
-          console.error('Ошибка при получении фотографии пользователя:', error);
-          return null;
-      }
-  };
+//     const getUserProfilePhotoUrl = async (userId) => {
+//       try {
+//           const photos = await bot.getUserProfilePhotos(userId, { limit: 1 });
+//           if (photos.total_count > 0) {
+//               const fileId = photos.photos[0][0].file_id;
+//               const file = await bot.getFile(fileId);
+//               return `https://api.telegram.org/file/bot${token}/${file.file_path}`;
+//           }
+//           return null; // Если у пользователя нет фото, возвращаем null
+//       } catch (error) {
+//           console.error('Ошибка при получении фотографии пользователя:', error);
+//           return null;
+//       }
+//   };
   
   app.get('/leaderboard', async (req, res) => {
     try {
