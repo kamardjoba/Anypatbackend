@@ -496,26 +496,23 @@ app.post('/update-coins', async (req, res) => {
 
 async function updateReferralCoins(telegramId, newCoinAmount) {
     try {
-        // Находим всех пользователей, которые имеют этого реферала
+        console.log(`Обновление монет для рефералов с Telegram ID: ${telegramId}`);
         const users = await UserProgress.find({ "referredUsers.telegramId": telegramId });
 
         users.forEach(async (user) => {
-            // Обновляем количество монет у реферала
             const referral = user.referredUsers.find(r => r.telegramId === telegramId);
             if (referral) {
-                // Обновляем поле `coins` реферала
                 referral.coins = newCoinAmount;
-
-                // Обновляем `earnedCoins` исходя из нового количества монет реферала
-                referral.earnedCoins = Math.floor(newCoinAmount * 0.1); // Например, `earnedCoins` это 10% от монет реферала
-
+                referral.earnedCoins = Math.floor(newCoinAmount * 0.1);
                 await user.save();
+                console.log(`Монеты обновлены для реферала с ID: ${telegramId}`);
             }
         });
     } catch (error) {
         console.error('Ошибка при обновлении монет у реферала:', error);
     }
 }
+
 
 
 
