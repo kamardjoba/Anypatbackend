@@ -449,24 +449,26 @@ app.get('/user-rank', async (req, res) => {
   }
 });
 
-  // Функция для обновления монет у реферала в массиве referredUsers
+// Функция для обновления монет и earnedCoins у реферала
 async function updateReferralCoins(telegramId, newCoinAmount) {
-  try {
-      // Находим всех пользователей, которые имеют этого реферала
-      const users = await UserProgress.find({ "referredUsers.telegramId": telegramId });
+    try {
+        // Находим всех пользователей, у которых есть этот реферал
+        const users = await UserProgress.find({ "referredUsers.telegramId": telegramId });
 
-      users.forEach(async (user) => {
-          // Обновляем количество монет у реферала
-          const referral = user.referredUsers.find(r => r.telegramId === telegramId);
-          if (referral) {
-              referral.coins = newCoinAmount;
-              await user.save();
-          }
-      });
-  } catch (error) {
-      console.error('Ошибка при обновлении монет у реферала:', error);
-  }
+        users.forEach(async (user) => {
+            // Обновляем количество монет у реферала и earnedCoins
+            const referral = user.referredUsers.find(r => r.telegramId === telegramId);
+            if (referral) {
+                referral.coins = newCoinAmount;
+                referral.earnedCoins = Math.floor(newCoinAmount * 0.1); // 10% от количества монет у реферала
+                await user.save();
+            }
+        });
+    } catch (error) {
+        console.error('Ошибка при обновлении монет у реферала:', error);
+    }
 }
+
 
 app.post('/update-coins', async (req, res) => {
     const { telegramId, coins } = req.body;
@@ -481,7 +483,7 @@ app.post('/update-coins', async (req, res) => {
         user.coins = coins;
         await user.save();
 
-        // Обновляем количество монет у всех рефералов и их earnedCoins
+        // Обновляем количество монет и earnedCoins у всех рефералов этого пользователя
         await updateReferralCoins(telegramId, coins);
 
         res.json({ success: true, message: 'Монеты обновлены.' });
@@ -490,6 +492,7 @@ app.post('/update-coins', async (req, res) => {
         res.status(500).json({ success: false, message: 'Ошибка при обновлении монет.' });
     }
 });
+
 
 async function updateReferralCoins(telegramId, newCoinAmount) {
     try {
