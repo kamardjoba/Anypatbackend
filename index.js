@@ -46,6 +46,22 @@ mongoose.connect(MONGODB_URL,)
           }
       });
       
+      app.get('/get-ton-tran-val', async (req, res) => {
+        const { telegramId } = req.query;
+    
+        try {
+            const user = await UserProgress.findOne({ telegramId });
+            if (!user) {
+                return res.status(404).json({ success: false, message: 'Пользователь не найден.' });
+            }
+    
+            res.json({ success: true, TonTran_val: user.TonTran_val });
+        } catch (error) {
+            console.error('Ошибка при получении TonTran_val:', error);
+            res.status(500).json({ success: false, message: 'Ошибка при получении TonTran_val.' });
+        }
+    });
+    
 
       app.get('/user-info', async (req, res) => {
         const { telegramId } = req.query;
