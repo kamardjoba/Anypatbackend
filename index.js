@@ -20,6 +20,7 @@ AWS.config.update({
 
 const s3 = new AWS.S3();
 
+
 const uploadToS3 = async (fileBuffer, fileName) => {
     const params = {
         Bucket: 'anytap.user.photo', // Имя вашего S3 бакета
