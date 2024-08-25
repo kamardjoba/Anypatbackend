@@ -380,7 +380,7 @@ app.get('/user-rank', async (req, res) => {
 });
 
  // Функция для обновления монет у реферала в массиве referredUsers
-async function updateReferralCoins(telegramId, earnedCoins) {
+async function updateReferralCoins(telegramId) {
     try {
         // Находим всех пользователей, которые имеют этого реферала
         const users = await UserProgress.find({ "referredUsers.telegramId": telegramId });
@@ -389,7 +389,7 @@ async function updateReferralCoins(telegramId, earnedCoins) {
             // Обновляем количество монет у реферала
             const referral = user.referredUsers.find(r => r.telegramId === telegramId);
             if (referral) {
-                referral.coins += earnedCoins;
+                referral.coins += user.coins;
                 await user.save();
             }
         });
