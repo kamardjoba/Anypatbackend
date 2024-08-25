@@ -34,7 +34,7 @@ mongoose.connect(MONGODB_URL,)
         return `https://t.me/AnyTap_bot?start=${referralCode}`;
       };
 
-      const cron = require('node-cron');
+
 
       // Запускаем задачу каждую минуту для тестирования
       cron.schedule('* * * * *', async () => {
