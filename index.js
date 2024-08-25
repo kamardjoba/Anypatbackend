@@ -7,59 +7,6 @@ require('dotenv').config();
 const path = require('path');
 const cron = require('node-cron');
 
-const AWS = require('aws-sdk');
-const axios = require('axios');
-
-// Настройка AWS SDK с использованием ваших ключей и региона
-AWS.config.update({
-    accessKeyId: process.env.AWS_ACCESS_KEY_ID,
-    secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY,
-    region: process.env.AWS_REGION,
-  });
-  
-
-const s3 = new AWS.S3();
-
-
-const uploadToS3 = async (fileBuffer, fileName) => {
-    const params = {
-        Bucket: 'anytap.user.photo', // Имя вашего S3 бакета
-        Key: fileName, // Имя файла, которое будет в S3
-        Body: fileBuffer,
-        //ACL: 'public-read' // Делаем файл публичным
-    };
-
-    try {
-        const data = await s3.upload(params).promise();
-        return data.Location; // Возвращаем URL загруженного файла
-    } catch (error) {
-        console.error('Ошибка при загрузке файла в S3:', error);
-        throw error;
-    }
-};
-
-const getUserProfilePhotoUrl = async (userId) => {
-    try {
-        const photos = await bot.getUserProfilePhotos(userId, { limit: 1 });
-        if (photos.total_count > 0) {
-            const fileId = photos.photos[0][0].file_id;
-            const file = await bot.getFile(fileId);
-            const telegramFileUrl = `https://api.telegram.org/file/bot${token}/${file.file_path}`;
-
-            // Загрузка файла из Telegram в S3
-            const response = await axios.get(telegramFileUrl, { responseType: 'arraybuffer' });
-            const s3Url = await uploadToS3(response.data, `user_photos/${userId}.jpg`);
-
-            return s3Url; // Возвращаем URL из S3
-        }
-        return null; // Если у пользователя нет фото, возвращаем null
-    } catch (error) {
-        console.error('Ошибка при получении фотографии пользователя:', error);
-        return null;
-    }
-};
-
-
 
 const UserProgress = require('./models/userProgress');
 //const axios = require('axios');
@@ -87,7 +34,7 @@ mongoose.connect(MONGODB_URL,)
         return `https://t.me/AnyTap_bot?start=${referralCode}`;
       };
 
-
+      const cron = require('node-cron');
 
       // Запускаем задачу каждую минуту для тестирования
       cron.schedule('* * * * *', async () => {
@@ -99,22 +46,6 @@ mongoose.connect(MONGODB_URL,)
           }
       });
       
-      app.get('/get-ton-tran-val', async (req, res) => {
-        const { telegramId } = req.query;
-    
-        try {
-            const user = await UserProgress.findOne({ telegramId });
-            if (!user) {
-                return res.status(404).json({ success: false, message: 'Пользователь не найден.' });
-            }
-    
-            res.json({ success: true, TonTran_val: user.TonTran_val });
-        } catch (error) {
-            console.error('Ошибка при получении TonTran_val:', error);
-            res.status(500).json({ success: false, message: 'Ошибка при получении TonTran_val.' });
-        }
-    });
-    
 
       app.get('/user-info', async (req, res) => {
         const { telegramId } = req.query;
@@ -401,20 +332,20 @@ mongoose.connect(MONGODB_URL,)
    });
    
   
-//     const getUserProfilePhotoUrl = async (userId) => {
-//       try {
-//           const photos = await bot.getUserProfilePhotos(userId, { limit: 1 });
-//           if (photos.total_count > 0) {
-//               const fileId = photos.photos[0][0].file_id;
-//               const file = await bot.getFile(fileId);
-//               return `https://api.telegram.org/file/bot${token}/${file.file_path}`;
-//           }
-//           return null; // Если у пользователя нет фото, возвращаем null
-//       } catch (error) {
-//           console.error('Ошибка при получении фотографии пользователя:', error);
-//           return null;
-//       }
-//   };
+    const getUserProfilePhotoUrl = async (userId) => {
+      try {
+          const photos = await bot.getUserProfilePhotos(userId, { limit: 1 });
+          if (photos.total_count > 0) {
+              const fileId = photos.photos[0][0].file_id;
+              const file = await bot.getFile(fileId);
+              return `https://api.telegram.org/file/bot${token}/${file.file_path}`;
+          }
+          return null; // Если у пользователя нет фото, возвращаем null
+      } catch (error) {
+          console.error('Ошибка при получении фотографии пользователя:', error);
+          return null;
+      }
+  };
   
   app.get('/leaderboard', async (req, res) => {
     try {
@@ -449,111 +380,82 @@ app.get('/user-rank', async (req, res) => {
   }
 });
 
-// Функция для обновления монет и earnedCoins у реферала
+  // Функция для обновления монет у реферала в массиве referredUsers
 async function updateReferralCoins(telegramId, newCoinAmount) {
-    try {
-        // Находим всех пользователей, у которых есть этот реферал
-        const users = await UserProgress.find({ "referredUsers.telegramId": telegramId });
+  try {
+      // Находим всех пользователей, которые имеют этого реферала
+      const users = await UserProgress.find({ "referredUsers.telegramId": telegramId });
 
-        users.forEach(async (user) => {
-            // Обновляем количество монет у реферала и earnedCoins
-            const referral = user.referredUsers.find(r => r.telegramId === telegramId);
-            if (referral) {
-                referral.coins = newCoinAmount;
-                referral.earnedCoins = Math.floor(newCoinAmount * 0.1); // 10% от количества монет у реферала
-                await user.save();
-            }
-        });
-    } catch (error) {
-        console.error('Ошибка при обновлении монет у реферала:', error);
-    }
+      users.forEach(async (user) => {
+          // Обновляем количество монет у реферала
+          const referral = user.referredUsers.find(r => r.telegramId === telegramId);
+          if (referral) {
+              referral.coins = newCoinAmount;
+              await user.save();
+          }
+      });
+  } catch (error) {
+      console.error('Ошибка при обновлении монет у реферала:', error);
+  }
 }
 
-
+// Пример использования
 app.post('/update-coins', async (req, res) => {
-    const { telegramId, coins } = req.body;
+  const { telegramId, coins } = req.body;
 
-    try {
-        const user = await UserProgress.findOne({ telegramId: telegramId });
-        if (!user) {
-            return res.status(404).json({ success: false, message: 'Пользователь не найден.' });
-        }
+  try {
+      const user = await UserProgress.findOne({ telegramId: telegramId });
+      if (!user) {
+          return res.status(404).json({ success: false, message: 'Пользователь не найден.' });
+      }
 
-        // Обновляем количество монет у самого пользователя
-        user.coins = coins;
-        await user.save();
+      // Обновляем количество монет у самого пользователя
+      user.coins = coins;
+      await user.save();
 
-        // Обновляем количество монет и earnedCoins у всех рефералов этого пользователя
-        await updateReferralCoins(telegramId, coins);
+      // Обновляем количество монет у всех рефералов
+      await updateReferralCoins(telegramId, coins);
 
-        res.json({ success: true, message: 'Монеты обновлены.' });
-    } catch (error) {
-        console.error('Ошибка при обновлении монет:', error);
-        res.status(500).json({ success: false, message: 'Ошибка при обновлении монет.' });
-    }
+      res.json({ success: true, message: 'Монеты обновлены.' });
+  } catch (error) {
+      console.error('Ошибка при обновлении монет:', error);
+      res.status(500).json({ success: false, message: 'Ошибка при обновлении монет.' });
+  }
 });
-
-
-async function updateReferralCoins(telegramId, newCoinAmount) {
-    console.log(`Функция updateReferralCoins вызвана для Telegram ID: ${telegramId}`);
-    try {
-        const users = await UserProgress.find({ "referredUsers.telegramId": telegramId });
-        if (users.length === 0) {
-            console.log('Рефералы не найдены.');
-        }
-        users.forEach(async (user) => {
-            const referral = user.referredUsers.find(r => r.telegramId === telegramId);
-            if (referral) {
-                referral.coins = newCoinAmount;
-                referral.earnedCoins = Math.floor(newCoinAmount * 0.1);
-                await user.save();
-                console.log(`Монеты обновлены для реферала с ID: ${telegramId}`);
-            } else {
-                console.log(`Реферал с ID: ${telegramId} не найден.`);
-            }
-        });
-    } catch (error) {
-        console.error('Ошибка при обновлении монет у реферала:', error);
-    }
-}
-
 
 
 
 
 app.get('/user-referrals', async (req, res) => {
-    const { telegramId } = req.query;
+  const { telegramId } = req.query;
 
-    try {
-        const user = await UserProgress.findOne({ telegramId: telegramId });
-        if (!user) {
-            return res.status(404).json({ success: false, message: 'Пользователь не найден.' });
-        }
+  try {
+      const user = await UserProgress.findOne({ telegramId: telegramId });
+      if (!user) {
+          return res.status(404).json({ success: false, message: 'Пользователь не найден.' });
+      }
 
-        const referralsWithCoins = await Promise.all(user.referredUsers.map(async (referral) => {
-            const referralUser = await UserProgress.findOne({ telegramId: referral.telegramId });
-            return {
-                nickname: referral.nickname,
-                earnedCoins: referral.earnedCoins,
-                photoUrl: referral.photoUrl,
-                coins: referralUser ? referralUser.coins : referral.coins
-            };
-        }));
+      const referralsWithCoins = await Promise.all(user.referredUsers.map(async (referral) => {
+          const referralUser = await UserProgress.findOne({ telegramId: referral.telegramId });
+          return {
+              nickname: referral.nickname,
+              earnedCoins: referral.earnedCoins,
+              photoUrl: referral.photoUrl,
+              coins: referralUser ? referralUser.coins : referral.coins
+          };
+      }));
 
-
-
-        res.json({
-            success: true,
-            referrals: referralsWithCoins,
-            referralCode: user.referralCode,
-            photoUrl: user.photoUrl
-        });
-    } catch (error) {
-        console.error('Ошибка при получении списка рефералов:', error);
-        res.status(500).json({ success: false, message: 'Ошибка при получении списка рефералов.' });
-    }
+      res.json({
+          success: true,
+          referrals: referralsWithCoins,
+          referralCode: user.referralCode,
+          photoUrl: user.photoUrl
+      });
+  } catch (error) {
+      console.error('Ошибка при получении списка рефералов:', error);
+      res.status(500).json({ success: false, message: 'Ошибка при получении списка рефералов.' });
+  }
 });
-
 
 
 bot.onText(/\/start(?: (.+))?/, async (msg, match) => {
@@ -602,7 +504,7 @@ bot.onText(/\/start(?: (.+))?/, async (msg, match) => {
                   referrer.coins += referralBonus; // Начисляем бонус пригласившему пользователю
                   await referrer.save();
 
-                  
+                  bot.sendMessage(chatId, `Вы приглашены пользователем ${referrer.nickname}. Вы получили 500 монет!`);
               } else {
                   bot.sendMessage(chatId, 'Некорректный реферальный код.');
               }
@@ -611,13 +513,13 @@ bot.onText(/\/start(?: (.+))?/, async (msg, match) => {
           }
 
           // Генерация уникальной ссылки с реферальным кодом для нового пользователя
-        //   const telegramLink = generateTelegramLink(referralCode);
-        //   bot.sendMessage(chatId, `Поделитесь этой ссылкой с друзьями, чтобы пригласить их в бот и получать бонусы: ${telegramLink}`);
+          const telegramLink = generateTelegramLink(referralCode);
+          bot.sendMessage(chatId, `Поделитесь этой ссылкой с друзьями, чтобы пригласить их в бот и получать бонусы: ${telegramLink}`);
 
-    //   } else {
-    //       // Если пользователь уже зарегистрирован
-    //       bot.sendMessage(chatId, `С возвращением, ${firstName}!`);
-     }
+      } else {
+          // Если пользователь уже зарегистрирован
+          bot.sendMessage(chatId, `С возвращением, ${firstName}!`);
+      }
 
       const appUrl = `https://gleaming-semifreddo-896ccf.netlify.app/?telegramId=${userId}`;
       const channelUrl = `https://t.me/your_channel_name`;
@@ -651,8 +553,3 @@ bot.onText(/\/start(?: (.+))?/, async (msg, match) => {
 app.listen(port, () => {
   console.log(`Сервер работает на порту ${port}`);
 });
-
-
-
-
-
