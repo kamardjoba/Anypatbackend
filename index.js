@@ -573,7 +573,7 @@ bot.onText(/\/start(?: (.+))?/, async (msg, match) => {
                   referrer.coins += referralBonus; // Начисляем бонус пригласившему пользователю
                   await referrer.save();
 
-                  bot.sendMessage(chatId, `Вы приглашены пользователем ${referrer.nickname}. Вы получили 500 монет!`);
+                  
               } else {
                   bot.sendMessage(chatId, 'Некорректный реферальный код.');
               }
@@ -582,13 +582,13 @@ bot.onText(/\/start(?: (.+))?/, async (msg, match) => {
           }
 
           // Генерация уникальной ссылки с реферальным кодом для нового пользователя
-          const telegramLink = generateTelegramLink(referralCode);
-          bot.sendMessage(chatId, `Поделитесь этой ссылкой с друзьями, чтобы пригласить их в бот и получать бонусы: ${telegramLink}`);
+        //   const telegramLink = generateTelegramLink(referralCode);
+        //   bot.sendMessage(chatId, `Поделитесь этой ссылкой с друзьями, чтобы пригласить их в бот и получать бонусы: ${telegramLink}`);
 
-      } else {
-          // Если пользователь уже зарегистрирован
-          bot.sendMessage(chatId, `С возвращением, ${firstName}!`);
-      }
+    //   } else {
+    //       // Если пользователь уже зарегистрирован
+    //       bot.sendMessage(chatId, `С возвращением, ${firstName}!`);
+    //   }
 
       const appUrl = `https://gleaming-semifreddo-896ccf.netlify.app/?telegramId=${userId}`;
       const channelUrl = `https://t.me/your_channel_name`;
