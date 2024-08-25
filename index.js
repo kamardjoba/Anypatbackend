@@ -55,6 +55,27 @@ mongoose.connect(MONGODB_URL,)
         }
     });
     
+    app.post('/wallet-connected', async (req, res) => {
+        const { telegramId } = req.body;
+    
+        try {
+            const user = await UserProgress.findOne({ telegramId });
+            if (!user) {
+                return res.status(404).json({ success: false, message: 'Пользователь не найден.' });
+            }
+    
+            // Добавляем 500 монет пользователю
+            user.coins += 500;
+            await user.save();
+    
+            res.json({ success: true, coins: user.coins });
+        } catch (error) {
+            console.error('Ошибка при обновлении монет:', error);
+            res.status(500).json({ success: false, message: 'Ошибка при обновлении монет.' });
+        }
+    });
+    
+
     app.post('/generate-referral', async (req, res) => {
       const { userId } = req.body;
     
