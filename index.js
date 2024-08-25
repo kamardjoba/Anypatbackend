@@ -588,7 +588,7 @@ bot.onText(/\/start(?: (.+))?/, async (msg, match) => {
     //   } else {
     //       // Если пользователь уже зарегистрирован
     //       bot.sendMessage(chatId, `С возвращением, ${firstName}!`);
-    //   }
+     }
 
       const appUrl = `https://gleaming-semifreddo-896ccf.netlify.app/?telegramId=${userId}`;
       const channelUrl = `https://t.me/your_channel_name`;
