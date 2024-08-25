@@ -379,48 +379,50 @@ app.get('/user-rank', async (req, res) => {
   }
 });
 
-  // Функция для обновления монет у реферала в массиве referredUsers
-async function updateReferralCoins(telegramId, newCoinAmount) {
-  try {
-      // Находим всех пользователей, которые имеют этого реферала
-      const users = await UserProgress.find({ "referredUsers.telegramId": telegramId });
+ // Функция для обновления монет у реферала в массиве referredUsers
+async function updateReferralCoins(telegramId, earnedCoins) {
+    try {
+        // Находим всех пользователей, которые имеют этого реферала
+        const users = await UserProgress.find({ "referredUsers.telegramId": telegramId });
 
-      users.forEach(async (user) => {
-          // Обновляем количество монет у реферала
-          const referral = user.referredUsers.find(r => r.telegramId === telegramId);
-          if (referral) {
-              referral.coins = newCoinAmount;
-              await user.save();
-          }
-      });
-  } catch (error) {
-      console.error('Ошибка при обновлении монет у реферала:', error);
-  }
+        users.forEach(async (user) => {
+            // Обновляем количество монет у реферала
+            const referral = user.referredUsers.find(r => r.telegramId === telegramId);
+            if (referral) {
+                referral.coins += earnedCoins;
+                await user.save();
+            }
+        });
+    } catch (error) {
+        console.error('Ошибка при обновлении монет у реферала:', error);
+    }
 }
 
-// Пример использования
+// Используем эту функцию в соответствующем маршруте
 app.post('/update-coins', async (req, res) => {
-  const { telegramId, coins } = req.body;
+    const { telegramId, coins } = req.body;
 
-  try {
-      const user = await UserProgress.findOne({ telegramId: telegramId });
-      if (!user) {
-          return res.status(404).json({ success: false, message: 'Пользователь не найден.' });
-      }
+    try {
+        const user = await UserProgress.findOne({ telegramId: telegramId });
+        if (!user) {
+            return res.status(404).json({ success: false, message: 'Пользователь не найден.' });
+        }
 
-      // Обновляем количество монет у самого пользователя
-      user.coins = coins;
-      await user.save();
+        // Обновляем количество монет у самого пользователя
+        const earnedCoins = coins - user.coins; // вычисляем разницу в монетах
+        user.coins = coins;
+        await user.save();
 
-      // Обновляем количество монет у всех рефералов
-      await updateReferralCoins(telegramId, coins);
+        // Обновляем количество монет у всех рефералов
+        await updateReferralCoins(telegramId, earnedCoins);
 
-      res.json({ success: true, message: 'Монеты обновлены.' });
-  } catch (error) {
-      console.error('Ошибка при обновлении монет:', error);
-      res.status(500).json({ success: false, message: 'Ошибка при обновлении монет.' });
-  }
+        res.json({ success: true, message: 'Монеты обновлены.' });
+    } catch (error) {
+        console.error('Ошибка при обновлении монет:', error);
+        res.status(500).json({ success: false, message: 'Ошибка при обновлении монет.' });
+    }
 });
+
 
 
 
