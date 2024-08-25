@@ -537,7 +537,7 @@ app.get('/user-referrals', async (req, res) => {
         }));
 
 
-        await updateReferralCoins(telegramId, coins);
+
 
         res.json({
             success: true,
