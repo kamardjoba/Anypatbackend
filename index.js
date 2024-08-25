@@ -379,26 +379,37 @@ app.get('/user-rank', async (req, res) => {
   }
 });
 
- // Функция для обновления монет у реферала в массиве referredUsers
-async function updateReferralCoins(telegramId) {
+// Функция для проверки и обновления монет у рефералов
+async function checkAndUpdateReferralCoins() {
     try {
-        // Находим всех пользователей, которые имеют этого реферала
-        const users = await UserProgress.find({ "referredUsers.telegramId": telegramId });
+        // Получаем всех пользователей
+        const users = await UserProgress.find({});
 
-        users.forEach(async (user) => {
-            // Обновляем количество монет у реферала
-            const referral = user.referredUsers.find(r => r.telegramId === telegramId);
-            if (referral) {
-                referral.coins += user.coins;
-                await user.save();
+        // Проходим по каждому пользователю
+        for (const user of users) {
+            for (const referral of user.referredUsers) {
+                // Ищем реферала в базе данных
+                const referralUser = await UserProgress.findOne({ telegramId: referral.telegramId });
+
+                if (referralUser) {
+                    // Проверяем, изменилось ли количество монет у реферала
+                    if (referralUser.coins !== referral.coins) {
+                        referral.coins = referralUser.coins; // Обновляем количество монет в реферальном списке
+                        await user.save(); // Сохраняем изменения
+                    }
+                }
             }
-        });
+        }
+
+        console.log('Проверка и обновление монет у рефералов завершена');
     } catch (error) {
-        console.error('Ошибка при обновлении монет у реферала:', error);
+        console.error('Ошибка при проверке и обновлении монет у рефералов:', error);
     }
 }
 
-// Используем эту функцию в соответствующем маршруте
+// Запускаем задачу каждую минуту
+cron.schedule('* * * * *', checkAndUpdateReferralCoins);
+
 app.post('/update-coins', async (req, res) => {
     const { telegramId, coins } = req.body;
 
@@ -408,8 +419,8 @@ app.post('/update-coins', async (req, res) => {
             return res.status(404).json({ success: false, message: 'Пользователь не найден.' });
         }
 
-        // Обновляем количество монет у самого пользователя
-        const earnedCoins = coins - user.coins; // вычисляем разницу в монетах
+        // Вычисляем разницу в монетах
+        const earnedCoins = coins - user.coins;
         user.coins = coins;
         await user.save();
 
