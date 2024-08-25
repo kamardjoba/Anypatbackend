@@ -59,6 +59,7 @@ mongoose.connect(MONGODB_URL,)
                 success: true,
                 firstName: user.firstName,
                 coins: user.coins,
+                TonTran_val: user.TonTran_val,
                 photoUrl: user.photoUrl // добавляем URL фото из базы данных
             });
         } catch (error) {
@@ -169,6 +170,7 @@ mongoose.connect(MONGODB_URL,)
     
             // Добавляем 5000 монет пользователю
             user.coins += 5000;
+            user.TonTran_val = true;
             await user.save();
             
             console.log('5000 монет успешно добавлены пользователю:', telegramId);
