@@ -521,7 +521,7 @@ async function updateReferralCoins(telegramId, newCoinAmount) {
 
 
 
-app.post('/user-referrals', async (req, res) => {
+app.get('/user-referrals', async (req, res) => {
     const { telegramId } = req.query;
 
     try {
@@ -539,6 +539,7 @@ app.post('/user-referrals', async (req, res) => {
                 coins: referralUser ? referralUser.coins : referral.coins
             };
         }));
+
 
 
         res.json({
