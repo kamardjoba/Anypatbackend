@@ -468,63 +468,89 @@ async function updateReferralCoins(telegramId, newCoinAmount) {
   }
 }
 
-// Пример использования
 app.post('/update-coins', async (req, res) => {
-  const { telegramId, coins } = req.body;
+    const { telegramId, coins } = req.body;
 
-  try {
-      const user = await UserProgress.findOne({ telegramId: telegramId });
-      if (!user) {
-          return res.status(404).json({ success: false, message: 'Пользователь не найден.' });
-      }
+    try {
+        const user = await UserProgress.findOne({ telegramId: telegramId });
+        if (!user) {
+            return res.status(404).json({ success: false, message: 'Пользователь не найден.' });
+        }
 
-      // Обновляем количество монет у самого пользователя
-      user.coins = coins;
-      await user.save();
+        // Обновляем количество монет у самого пользователя
+        user.coins = coins;
+        await user.save();
 
-      // Обновляем количество монет у всех рефералов
-      await updateReferralCoins(telegramId, coins);
+        // Обновляем количество монет у всех рефералов и их earnedCoins
+        await updateReferralCoins(telegramId, coins);
 
-      res.json({ success: true, message: 'Монеты обновлены.' });
-  } catch (error) {
-      console.error('Ошибка при обновлении монет:', error);
-      res.status(500).json({ success: false, message: 'Ошибка при обновлении монет.' });
-  }
+        res.json({ success: true, message: 'Монеты обновлены.' });
+    } catch (error) {
+        console.error('Ошибка при обновлении монет:', error);
+        res.status(500).json({ success: false, message: 'Ошибка при обновлении монет.' });
+    }
 });
+
+async function updateReferralCoins(telegramId, newCoinAmount) {
+    try {
+        // Находим всех пользователей, которые имеют этого реферала
+        const users = await UserProgress.find({ "referredUsers.telegramId": telegramId });
+
+        users.forEach(async (user) => {
+            // Обновляем количество монет у реферала
+            const referral = user.referredUsers.find(r => r.telegramId === telegramId);
+            if (referral) {
+                // Обновляем поле `coins` реферала
+                referral.coins = newCoinAmount;
+
+                // Обновляем `earnedCoins` исходя из нового количества монет реферала
+                referral.earnedCoins = Math.floor(newCoinAmount * 0.1); // Например, `earnedCoins` это 10% от монет реферала
+
+                await user.save();
+            }
+        });
+    } catch (error) {
+        console.error('Ошибка при обновлении монет у реферала:', error);
+    }
+}
 
 
 
 
 app.get('/user-referrals', async (req, res) => {
-  const { telegramId } = req.query;
+    const { telegramId } = req.query;
 
-  try {
-      const user = await UserProgress.findOne({ telegramId: telegramId });
-      if (!user) {
-          return res.status(404).json({ success: false, message: 'Пользователь не найден.' });
-      }
+    try {
+        const user = await UserProgress.findOne({ telegramId: telegramId });
+        if (!user) {
+            return res.status(404).json({ success: false, message: 'Пользователь не найден.' });
+        }
 
-      const referralsWithCoins = await Promise.all(user.referredUsers.map(async (referral) => {
-          const referralUser = await UserProgress.findOne({ telegramId: referral.telegramId });
-          return {
-              nickname: referral.nickname,
-              earnedCoins: referral.earnedCoins,
-              photoUrl: referral.photoUrl,
-              coins: referralUser ? referralUser.coins : referral.coins
-          };
-      }));
+        const referralsWithCoins = await Promise.all(user.referredUsers.map(async (referral) => {
+            const referralUser = await UserProgress.findOne({ telegramId: referral.telegramId });
+            return {
+                nickname: referral.nickname,
+                earnedCoins: referral.earnedCoins,
+                photoUrl: referral.photoUrl,
+                coins: referralUser ? referralUser.coins : referral.coins
+            };
+        }));
 
-      res.json({
-          success: true,
-          referrals: referralsWithCoins,
-          referralCode: user.referralCode,
-          photoUrl: user.photoUrl
-      });
-  } catch (error) {
-      console.error('Ошибка при получении списка рефералов:', error);
-      res.status(500).json({ success: false, message: 'Ошибка при получении списка рефералов.' });
-  }
+
+        await updateReferralCoins(telegramId, coins);
+
+        res.json({
+            success: true,
+            referrals: referralsWithCoins,
+            referralCode: user.referralCode,
+            photoUrl: user.photoUrl
+        });
+    } catch (error) {
+        console.error('Ошибка при получении списка рефералов:', error);
+        res.status(500).json({ success: false, message: 'Ошибка при получении списка рефералов.' });
+    }
 });
+
 
 
 bot.onText(/\/start(?: (.+))?/, async (msg, match) => {
