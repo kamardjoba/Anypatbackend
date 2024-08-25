@@ -21,7 +21,7 @@ const s3 = new AWS.S3();
 
 const uploadToS3 = async (fileBuffer, fileName) => {
     const params = {
-        Bucket: 'bitclifprofilephoto', // Имя вашего S3 бакета
+        Bucket: 'anytap.user.photo', // Имя вашего S3 бакета
         Key: fileName, // Имя файла, которое будет в S3
         Body: fileBuffer,
         ACL: 'public-read' // Делаем файл публичным
