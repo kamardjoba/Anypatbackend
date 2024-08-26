@@ -43,20 +43,16 @@ const UserSchema = new mongoose.Schema({
       type: Boolean, 
       default: false 
   },
-  referredUsers: [{
-    telegramId: { // Добавляем поле для хранения Telegram ID реферала
-        type: Number,
-        required: true,
-    },
-    nickname: String,
-    earnedCoins: Number,
-    photoUrl: String,
-    coins: {
-        type: Number,
-        required: true,
-        default: 500
-    }
-  }],
+    referredUsers: [{
+      nickname: String,
+      earnedCoins: Number,
+      photoUrl: String,
+      coins: { // Добавляем поле для хранения количества монет у реферала
+          type: Number,
+          required: true,
+          default: 500 // или любое другое стартовое значение
+      }
+    }],
     photoUrl: {
       type: String,
       required: false
