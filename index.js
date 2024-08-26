@@ -586,27 +586,32 @@ bot.onText(/\/start(?: (.+))?/, async (msg, match) => {
           if (referrerCode) {
             const referrer = await UserProgress.findOne({ referralCode: referrerCode });
         
-            if (referrer) {
-                const referralBonus = Math.floor(coins * 0.1); // 10% бонус от начальных монет нового пользователя
-        
-                referrer.referredUsers.push({
-                    telegramId: userId, // Записываем Telegram ID реферала
-                    nickname: nickname,
-                    firstName: firstName, // Сохраняем firstName
-                    earnedCoins: referralBonus,
-                    photoUrl: photoUrl, // Сохраняем фото нового пользователя у реферера
-                    coins: coins // Сохраняем стартовое количество монет
-                });
-        
-                referrer.coins += referralBonus; // Начисляем бонус пригласившему пользователю
-                await referrer.save();
+            if (referrerCode) {
+                const referrer = await UserProgress.findOne({ referralCode: referrerCode });
+                if (referrer) {
+                    const referralBonus = Math.floor(coins * 0.1); // 10% бонус от начальных монет нового пользователя
+
+                    referrer.referredUsers.push({
+                        telegramId: userId, // Записываем Telegram ID реферала
+                        nickname: nickname,
+                        firstName: firstName, // Сохраняем firstName
+                        earnedCoins: referralBonus,
+                        photoUrl: photoUrl, // Сохраняем фото нового пользователя у реферера
+                        coins: coins // Сохраняем стартовое количество монет
+                    });
+
+                    referrer.coins += referralBonus; // Начисляем бонус пригласившему пользователю
+                    await referrer.save();
+                } else {
+                    bot.sendMessage(chatId, 'Некорректный реферальный код.');
+                }
             } else {
-                bot.sendMessage(chatId, 'Некорректный реферальный код.');
+                bot.sendMessage(chatId, 'Добро пожаловать! Вы получили 500 монет.');
             }
         } else {
-              bot.sendMessage(chatId, 'Добро пожаловать! Вы получили 500 монет.');
-          }
-
+            bot.sendMessage(chatId, `С возвращением, ${firstName}!`);
+        }
+     
           // Генерация уникальной ссылки с реферальным кодом для нового пользователя
         //   const telegramLink = generateTelegramLink(referralCode);
         //   bot.sendMessage(chatId, `Поделитесь этой ссылкой с друзьями, чтобы пригласить их в бот и получать бонусы: ${telegramLink}`);
