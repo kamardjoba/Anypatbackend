@@ -456,6 +456,54 @@ app.get('/user-rank', async (req, res) => {
 
 
 
+const updateReferrerCoins = async (referralId, newCoins) => {
+    try {
+        const referralUser = await UserProgress.findOne({ telegramId: referralId });
+        if (referralUser) {
+            const referrer = await UserProgress.findOne({ 'referredUsers.telegramId': referralId });
+
+            if (referrer) {
+                const previousCoins = referralUser.coins;
+                const bonusEarned = Math.floor((newCoins - previousCoins) * 0.1);
+
+                if (bonusEarned > 0) {
+                    referrer.coins += bonusEarned;
+                    referrer.referredUsers = referrer.referredUsers.map(ref => {
+                        if (ref.telegramId === referralId) {
+                            ref.earnedCoins += bonusEarned;
+                        }
+                        return ref;
+                    });
+
+                    await referrer.save();
+                }
+            }
+        }
+    } catch (error) {
+        console.error('Ошибка при обновлении монет реферера:', error);
+    }
+};
+
+app.post('/add-coins-to-referral', async (req, res) => {
+    const { telegramId, amount } = req.body;
+
+    try {
+        const referralUser = await UserProgress.findOne({ telegramId });
+        if (referralUser) {
+            referralUser.coins += amount;
+            await referralUser.save();
+
+            await updateReferrerCoins(telegramId, referralUser.coins);
+
+            res.json({ success: true, coins: referralUser.coins });
+        } else {
+            res.status(404).json({ success: false, message: 'Пользователь не найден.' });
+        }
+    } catch (error) {
+        console.error('Ошибка при добавлении монет рефералу:', error);
+        res.status(500).json({ success: false, message: 'Ошибка при добавлении монет рефералу.' });
+    }
+});
 
 
 
