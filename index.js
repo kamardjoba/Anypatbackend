@@ -271,46 +271,6 @@ mongoose.connect(MONGODB_URL,)
       }
     });
 
-    app.post('/update-coins', async (req, res) => {
-        const { telegramId, coins } = req.body;
-    
-        try {
-            const user = await UserProgress.findOne({ telegramId: telegramId });
-            if (!user) {
-                return res.status(404).json({ success: false, message: 'Пользователь не найден.' });
-            }
-    
-            // Обновляем количество монет у самого пользователя
-            user.coins = coins;
-            await user.save();
-    
-            // Обновляем количество монет у всех рефералов и их earnedCoins
-            await updateReferralCoins(telegramId, coins);
-    
-            res.json({ success: true, message: 'Монеты обновлены.' });
-        } catch (error) {
-            console.error('Ошибка при обновлении монет:', error);
-            res.status(500).json({ success: false, message: 'Ошибка при обновлении монет.' });
-        }
-    });
-    
-    async function updateReferralCoins(telegramId, newCoinAmount) {
-        try {
-            // Находим всех пользователей, которые имеют этого реферала
-            const users = await UserProgress.find({ "referredUsers.telegramId": telegramId });
-    
-            users.forEach(async (user) => {
-                // Обновляем количество монет у реферала
-                const referral = user.referredUsers.find(r => r.telegramId === telegramId);
-                if (referral) {
-                    referral.coins = newCoinAmount;
-                    await user.save();
-                }
-            });
-        } catch (error) {
-            console.error('Ошибка при обновлении монет у реферала:', error);
-        }
-    }
     
 
     app.post('/check-subscription', async (req, res) => {
