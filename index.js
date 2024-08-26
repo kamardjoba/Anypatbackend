@@ -458,27 +458,36 @@ app.get('/user-rank', async (req, res) => {
 
 const updateReferrerCoins = async (referralId, newCoins) => {
     try {
+        console.log(`Запуск функции updateReferrerCoins для referralId: ${referralId} с новыми монетами: ${newCoins}`);
+        
         const referralUser = await UserProgress.findOne({ telegramId: referralId });
         if (referralUser) {
+            console.log(`Найден реферал: ${referralUser.telegramId}, с текущими монетами: ${referralUser.coins}`);
+            
             const referrer = await UserProgress.findOne({ 'referredUsers.telegramId': referralId });
 
             if (referrer) {
+                console.log(`Найден реферер: ${referrer.telegramId}, с текущими монетами: ${referrer.coins}`);
+
                 const previousCoins = referralUser.coins;
                 const bonusEarned = Math.floor((newCoins - previousCoins) * 0.1);
 
-                console.log(`Обновление монет для реферера. Предыдущие монеты: ${previousCoins}, Новые монеты: ${newCoins}, Начисленный бонус: ${bonusEarned}`);
+                console.log(`Предыдущие монеты реферала: ${previousCoins}, Новые монеты реферала: ${newCoins}, Начисленный бонус рефереру: ${bonusEarned}`);
 
                 if (bonusEarned > 0) {
                     referrer.coins += bonusEarned;
+                    console.log(`Обновленные монеты реферера: ${referrer.coins}`);
+
                     referrer.referredUsers = referrer.referredUsers.map(ref => {
                         if (ref.telegramId === referralId) {
                             ref.earnedCoins += bonusEarned;
+                            console.log(`Обновленные earnedCoins у реферала ${ref.telegramId}: ${ref.earnedCoins}`);
                         }
                         return ref;
                     });
 
                     await referrer.save();
-                    console.log(`Монеты реферера успешно обновлены. Новое количество монет: ${referrer.coins}`);
+                    console.log(`Монеты реферера успешно обновлены и сохранены в базе данных. Текущие монеты реферера: ${referrer.coins}`);
                 } else {
                     console.log('Бонус не начислен, так как нет увеличения монет.');
                 }
@@ -492,6 +501,7 @@ const updateReferrerCoins = async (referralId, newCoins) => {
         console.error('Ошибка при обновлении монет реферера:', error);
     }
 };
+
 
 
 app.post('/add-coins-to-referral', async (req, res) => {
