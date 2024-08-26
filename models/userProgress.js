@@ -45,6 +45,7 @@ const UserSchema = new mongoose.Schema({
   },
     referredUsers: [{
       nickname: String,
+      firstName: String,
       earnedCoins: Number,
       photoUrl: String,
       coins: { // Добавляем поле для хранения количества монет у реферала

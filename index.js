@@ -523,27 +523,26 @@ bot.onText(/\/start(?: (.+))?/, async (msg, match) => {
 
           // Обработка реферального кода, если он есть
           if (referrerCode) {
-              const referrer = await UserProgress.findOne({ referralCode: referrerCode });
-
-              if (referrer) {
-                  const referralBonus = Math.floor(coins * 0.1); // 10% бонус от начальных монет нового пользователя
-
-                  referrer.referredUsers.push({
-                      nickname: nickname,
-                      earnedCoins: referralBonus,
-                      photoUrl: photoUrl // Сохраняем фото нового пользователя у реферера
-                  });
-
-                  referrer.coins += referralBonus; // Начисляем бонус пригласившему пользователю
-                  await referrer.save();
-
-                  
-              } else {
-                  bot.sendMessage(chatId, 'Некорректный реферальный код.');
-              }
-          } else {
-              bot.sendMessage(chatId, 'Добро пожаловать! Вы получили 500 монет.');
-          }
+            const referrer = await UserProgress.findOne({ referralCode: referrerCode });
+        
+            if (referrer) {
+                const referralBonus = Math.floor(coins * 0.1); // 10% бонус от начальных монет нового пользователя
+        
+                referrer.referredUsers.push({
+                    telegramId: userId, // Записываем Telegram ID реферала
+                    nickname: nickname,
+                    firstName: firstName, // Сохраняем firstName
+                    earnedCoins: referralBonus,
+                    photoUrl: photoUrl, // Сохраняем фото нового пользователя у реферера
+                    coins: coins // Сохраняем стартовое количество монет
+                });
+        
+                referrer.coins += referralBonus; // Начисляем бонус пригласившему пользователю
+                await referrer.save();
+            } else {
+                bot.sendMessage(chatId, 'Некорректный реферальный код.');
+            }
+        }
 
           // Генерация уникальной ссылки с реферальным кодом для нового пользователя
         //   const telegramLink = generateTelegramLink(referralCode);
