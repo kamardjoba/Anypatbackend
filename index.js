@@ -290,7 +290,14 @@ mongoose.connect(MONGODB_URL,)
                     user.coins += 200; // начисляем 200 монет за подписку на первый канал
                     user.isSubscribedToChannel = true; // помечаем, что пользователь подписан на первый канал
                 }
+
+            }else {
+            if (user && user.isSubscribedToChannel) {
+                user.coins -= 200;
+                user.isSubscribedToChannel = false; // помечаем, что пользователь отписался от первого канала
+                // Здесь можно отнять монеты или выполнить другие действия при отписке, если нужно
             }
+        }
     
             // Проверка подписки на второй канал
             const chatMemberOctiesChannel = await bot.getChatMember(octiesChannelId, telegramId);
@@ -298,6 +305,12 @@ mongoose.connect(MONGODB_URL,)
                 if (user && !user.isSubscribedToOctiesChannel) {
                     user.coins += 200; // начисляем 100 монет за подписку на второй канал
                     user.isSubscribedToOctiesChannel = true; // помечаем, что пользователь подписан на второй канал
+                }
+            }else {
+                if (user && user.isSubscribedToOctiesChannel) {
+                    user.coins -= 200;
+                    user.isSubscribedToOctiesChannel = false; // помечаем, что пользователь отписался от второго канала
+                    // Здесь можно отнять монеты или выполнить другие действия при отписке, если нужно
                 }
             }
 
