@@ -497,11 +497,13 @@ app.post('/add-coins-to-referral', async (req, res) => {
     const { telegramId, amount } = req.body;
 
     try {
+        console.log('Поиск пользователя для обновления монет:', telegramId);
         const referralUser = await UserProgress.findOne({ telegramId });
         if (referralUser) {
             referralUser.coins += amount;
             await referralUser.save();
 
+            console.log('Вызов функции updateReferrerCoins');
             await updateReferrerCoins(telegramId, referralUser.coins);
 
             res.json({ success: true, coins: referralUser.coins });
@@ -513,6 +515,7 @@ app.post('/add-coins-to-referral', async (req, res) => {
         res.status(500).json({ success: false, message: 'Ошибка при добавлении монет рефералу.' });
     }
 });
+
 
 
 
