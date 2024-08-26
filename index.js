@@ -466,6 +466,8 @@ const updateReferrerCoins = async (referralId, newCoins) => {
                 const previousCoins = referralUser.coins;
                 const bonusEarned = Math.floor((newCoins - previousCoins) * 0.1);
 
+                console.log(`Обновление монет для реферера. Предыдущие монеты: ${previousCoins}, Новые монеты: ${newCoins}, Начисленный бонус: ${bonusEarned}`);
+
                 if (bonusEarned > 0) {
                     referrer.coins += bonusEarned;
                     referrer.referredUsers = referrer.referredUsers.map(ref => {
@@ -476,8 +478,15 @@ const updateReferrerCoins = async (referralId, newCoins) => {
                     });
 
                     await referrer.save();
+                    console.log(`Монеты реферера успешно обновлены. Новое количество монет: ${referrer.coins}`);
+                } else {
+                    console.log('Бонус не начислен, так как нет увеличения монет.');
                 }
+            } else {
+                console.log('Реферер не найден.');
             }
+        } else {
+            console.log('Реферал не найден.');
         }
     } catch (error) {
         console.error('Ошибка при обновлении монет реферера:', error);
