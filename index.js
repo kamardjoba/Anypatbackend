@@ -474,6 +474,7 @@ app.get('/user-referrals', async (req, res) => {
               nickname: referral.nickname,
               earnedCoins: referral.earnedCoins,
               photoUrl: referral.photoUrl,
+              firstName: referral.firstName,
               coins: referralUser ? referralUser.coins : referral.coins
           };
       }));
