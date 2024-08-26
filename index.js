@@ -493,6 +493,7 @@ const updateReferrerCoins = async (referralId, newCoins) => {
     }
 };
 
+
 app.post('/add-coins-to-referral', async (req, res) => {
     const { telegramId, amount } = req.body;
 
