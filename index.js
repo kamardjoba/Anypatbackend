@@ -498,10 +498,14 @@ app.post('/add-coins-to-referral', async (req, res) => {
     const { telegramId, amount } = req.body;
 
     try {
-        console.log('Поиск пользователя для обновления монет:', telegramId);
+        const newAmount = Number(amount);
+        if (isNaN(newAmount)) {
+            throw new Error('Invalid amount: value must be a number');
+        }
+
         const referralUser = await UserProgress.findOne({ telegramId });
         if (referralUser) {
-            referralUser.coins += amount;
+            referralUser.coins += newAmount;
             await referralUser.save();
 
             console.log('Вызов функции updateReferrerCoins');
@@ -513,7 +517,7 @@ app.post('/add-coins-to-referral', async (req, res) => {
         }
     } catch (error) {
         console.error('Ошибка при добавлении монет рефералу:', error);
-        res.status(500).json({ success: false, message: 'Ошибка при добавлении монет рефералу.' });
+        res.status(500).json({ success: false, message: error.message });
     }
 });
 
