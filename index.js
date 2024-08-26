@@ -469,7 +469,7 @@ const updateReferrerCoins = async (referralId, newCoins) => {
             if (referrer) {
                 console.log(`Найден реферер: ${referrer.telegramId}, с текущими монетами: ${referrer.coins}`);
 
-                const previousCoins = referralUser.coins;
+                const previousCoins = referralUser.coins;  // Здесь берем сохраненные данные, а не просто переданные
                 const bonusEarned = Math.floor((newCoins - previousCoins) * 0.1);
 
                 console.log(`Предыдущие монеты реферала: ${previousCoins}, Новые монеты реферала: ${newCoins}, Начисленный бонус рефереру: ${bonusEarned}`);
@@ -518,8 +518,11 @@ app.post('/add-coins-to-referral', async (req, res) => {
             referralUser.coins += newAmount;
             await referralUser.save();
 
+            const newCoins = referralUser.coins + amount; // Здесь amount — это количество монет, которое добавляется
+            await referralUser.save(); // Сначала сохраняем новые данные
+            
             console.log('Вызов функции updateReferrerCoins');
-            await updateReferrerCoins(telegramId, referralUser.coins);
+            await updateReferrerCoins(referralUser.telegramId, newCoins)
 
             res.json({ success: true, coins: referralUser.coins });
         } else {
