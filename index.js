@@ -651,7 +651,7 @@ bot.onText(/\/start(?: (.+))?/, async (msg, match) => {
      }
 
       const appUrl = `https://gleaming-semifreddo-896ccf.netlify.app/?telegramId=${userId}`;
-      const channelUrl = `https://t.me/your_channel_name`;
+      const channelUrl = `https://t.me/any_tap`;
 
       const imagePath = path.join(__dirname, 'images', 'Octies_bot_logo.png');
 
