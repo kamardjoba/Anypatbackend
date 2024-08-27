@@ -277,8 +277,8 @@ mongoose.connect(MONGODB_URL,)
     app.post('/check-subscription', async (req, res) => {
         const { telegramId } = req.body;
         
-        const channelId = -1002208556196; // ID первого канала
-        const octiesChannelId = -1002234145528; // ID второго канала
+        const channelId = -1002246870197; // ID первого канала
+        const octiesChannelId = -1002088709942; // ID второго канала
     
         try {
             const user = await UserProgress.findOne({ telegramId });
