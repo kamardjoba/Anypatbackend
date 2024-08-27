@@ -582,6 +582,16 @@ app.get('/user-referrals', async (req, res) => {
   }
 });
 
+app.get('/total-users', async (req, res) => {
+    try {
+        const userCount = await UserProgress.countDocuments();
+        res.json({ success: true, totalUsers: userCount });
+    } catch (error) {
+        console.error('Ошибка при подсчете пользователей:', error);
+        res.status(500).json({ success: false, message: 'Ошибка при подсчете пользователей.' });
+    }
+});
+
 
 bot.onText(/\/start(?: (.+))?/, async (msg, match) => {
   const chatId = msg.chat.id;
