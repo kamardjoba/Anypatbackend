@@ -650,7 +650,7 @@ bot.onText(/\/start(?: (.+))?/, async (msg, match) => {
     //       bot.sendMessage(chatId, `С возвращением, ${firstName}!`);
      }
 
-      const appUrl = `https://gleaming-semifreddo-896ccf.netlify.app/?telegramId=${userId}`;
+      const appUrl = `https://anytap.org/?telegramId=${userId}`;
       const channelUrl = `https://t.me/any_tap`;
 
       const imagePath = path.join(__dirname, 'images', 'Octies_bot_logo.png');
