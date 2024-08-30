@@ -43,6 +43,10 @@ const UserSchema = new mongoose.Schema({
       type: Boolean, 
       default: false 
   },
+  StartNft_val: { 
+    type: Boolean, 
+    default: false 
+},
   referredUsers: [{
     telegramId: { // Добавляем поле для хранения telegramId реферала
         type: Number,
