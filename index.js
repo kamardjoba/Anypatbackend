@@ -630,22 +630,6 @@ app.post('/save-wallet-address', async (req, res) => {
     }
 });
 
-app.post('/check-and-update-frends-val', async (req, res) => {
-    const { telegramId } = req.body;
-
-    try {
-        const user = await UserProgress.findOne({ telegramId });
-        if (!user) {
-            return res.status(404).json({ success: false, message: 'User not found.' });
-        }
-
-        res.json({ success: true, Frends_val: user.Frends_val });
-    } catch (error) {
-        console.error('Error checking Frends_val:', error);
-        res.status(500).json({ success: false, message: 'Error checking Frends_val.' });
-    }
-});
-
 app.post('/update-frends-val', async (req, res) => {
     const { telegramId, Frends_val } = req.body;
 
@@ -655,7 +639,7 @@ app.post('/update-frends-val', async (req, res) => {
             return res.status(404).json({ success: false, message: 'User not found.' });
         }
 
-        user.Frends_val = Frends_val;
+        user.Frends_val = Frends_val; // Обновляем поле в базе данных
         await user.save();
 
         res.json({ success: true, message: 'Frends_val updated successfully!' });
