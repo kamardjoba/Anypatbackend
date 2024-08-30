@@ -47,6 +47,10 @@ const UserSchema = new mongoose.Schema({
     type: Boolean, 
     default: false 
   },
+  Frends_val: { 
+    type: Boolean, 
+    default: false 
+  },
   walletAddress: { 
     type: String, 
     required: false 
