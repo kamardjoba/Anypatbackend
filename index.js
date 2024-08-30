@@ -611,6 +611,25 @@ app.post('/update-startnft-val', async (req, res) => {
     }
 });
 
+app.post('/save-wallet-address', async (req, res) => {
+    const { telegramId, walletAddress } = req.body;
+
+    try {
+        const user = await UserProgress.findOne({ telegramId });
+        if (!user) {
+            return res.status(404).json({ success: false, message: 'User not found.' });
+        }
+
+        user.walletAddress = walletAddress; // Сохраняем адрес кошелька
+        await user.save();
+
+        res.json({ success: true, message: 'Wallet address saved successfully!' });
+    } catch (error) {
+        console.error('Error saving wallet address:', error);
+        res.status(500).json({ success: false, message: 'Error saving wallet address.' });
+    }
+});
+
 
 bot.onText(/\/start(?: (.+))?/, async (msg, match) => {
   const chatId = msg.chat.id;

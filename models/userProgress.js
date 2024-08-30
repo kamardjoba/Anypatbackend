@@ -46,7 +46,11 @@ const UserSchema = new mongoose.Schema({
   StartNft_val: { 
     type: Boolean, 
     default: false 
-},
+  },
+  walletAddress: { 
+    type: String, 
+    required: false 
+  },
   referredUsers: [{
     telegramId: { // Добавляем поле для хранения telegramId реферала
         type: Number,
