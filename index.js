@@ -630,6 +630,26 @@ app.post('/save-wallet-address', async (req, res) => {
     }
   });
 
+  app.post('/add-coins', async (req, res) => {
+    const { telegramId, amount } = req.body;
+
+    try {
+        const user = await UserProgress.findOne({ telegramId });
+        if (!user) {
+            return res.status(404).json({ success: false, message: 'Пользователь не найден.' });
+        }
+
+        // Добавляем указанное количество монет пользователю
+        user.coins += amount;
+        await user.save();
+
+        res.json({ success: true, coins: user.coins });
+    } catch (error) {
+        console.error('Ошибка при добавлении монет:', error);
+        res.status(500).json({ success: false, message: 'Ошибка при добавлении монет.' });
+    }
+});
+
 app.post('/update-frends-val', async (req, res) => {
     const { telegramId, Frends_val } = req.body;
 
