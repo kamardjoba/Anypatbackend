@@ -650,6 +650,7 @@ app.post('/save-wallet-address', async (req, res) => {
     }
 });
 
+
 app.post('/update-frends-val', async (req, res) => {
     const { telegramId, Frends_val } = req.body;
 
