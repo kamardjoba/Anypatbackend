@@ -417,8 +417,6 @@ mongoose.connect(MONGODB_URL,)
         }
     });
     
-   
-  
 //     const getUserProfilePhotoUrl = async (userId) => {
 //       try {
 //           const photos = await bot.getUserProfilePhotos(userId, { limit: 1 });
