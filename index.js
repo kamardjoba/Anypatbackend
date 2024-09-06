@@ -592,25 +592,6 @@ app.get('/total-users', async (req, res) => {
     }
 });
 
-app.post('/update-startnft-val', async (req, res) => {
-    const { telegramId, StartNft_val } = req.body;
-
-    try {
-        const user = await UserProgress.findOne({ telegramId });
-        if (!user) {
-            return res.status(404).json({ success: false, message: 'User not found.' });
-        }
-
-        user.StartNft_val = StartNft_val; // Обновляем поле в базе данных
-        await user.save();
-
-        res.json({ success: true, message: 'StartNft_val updated successfully!' });
-    } catch (error) {
-        console.error('Error updating StartNft_val:', error);
-        res.status(500).json({ success: false, message: 'Error updating StartNft_val.' });
-    }
-});
-
 app.post('/save-wallet-address', async (req, res) => {
     const { telegramId, walletAddress } = req.body;
   
@@ -667,6 +648,25 @@ app.post('/update-frends-val', async (req, res) => {
     } catch (error) {
         console.error('Error updating Frends_val:', error);
         res.status(500).json({ success: false, message: 'Error updating Frends_val.' });
+    }
+});
+
+app.post('/update-startnft-val', async (req, res) => {
+    const { telegramId, StartNft_val } = req.body;
+
+    try {
+        const user = await UserProgress.findOne({ telegramId });
+        if (!user) {
+            return res.status(404).json({ success: false, message: 'User not found.' });
+        }
+
+        user.StartNft_val = StartNft_val; // Обновляем поле в базе данных
+        await user.save();
+
+        res.json({ success: true, message: 'StartNft_val updated successfully!' });
+    } catch (error) {
+        console.error('Error updating StartNft_val:', error);
+        res.status(500).json({ success: false, message: 'Error updating StartNft_val.' });
     }
 });
 
