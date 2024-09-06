@@ -442,6 +442,7 @@ mongoose.connect(MONGODB_URL,)
     }
 });
 
+
 app.get('/user-rank', async (req, res) => {
   const { telegramId } = req.query;
   console.log(`Получен запрос для telegramId: ${telegramId}`); // Добавьте этот лог
