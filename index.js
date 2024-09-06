@@ -125,6 +125,7 @@ mongoose.connect(MONGODB_URL,)
     
             res.json({
                 success: true,
+                StartNft_val: user.StartNft_val,
                 firstName: user.firstName,
                 coins: user.coins,
                 photoUrl: user.photoUrl // добавляем URL фото из базы данных
