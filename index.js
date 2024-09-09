@@ -450,9 +450,9 @@ mongoose.connect(MONGODB_URL,)
   
   app.get('/leaderboard', async (req, res) => {
     try {
-        const users = await UserProgress.find({}, { nickname: 1, coins: 1 })
-        .sort({ coins: -1 })
-        .limit(50); // Находим топ-10 пользователей
+        const users = await UserProgress.find({}, { nickname: 1, coins: 1, photoUrl: 1 })
+    .sort({ coins: -1 })
+    .limit(50);
         res.json(users);
     } catch (error) {
         console.error('Ошибка при получении лидерборда:', error);
