@@ -51,6 +51,14 @@ const UserSchema = new mongoose.Schema({
     type: Boolean, 
     default: false 
   },
+  WeeklyNft_val: { 
+    type: Boolean, 
+    default: false 
+  },
+  TonTran_val: { 
+    type: Boolean, 
+    default: false 
+  },
   walletAddress: { 
     type: String, 
     required: false 
