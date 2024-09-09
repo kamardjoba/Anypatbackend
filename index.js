@@ -113,6 +113,22 @@ mongoose.connect(MONGODB_URL,)
         }
     });
     
+    app.get('/get-weekly-nft-val', async (req, res) => {
+        const { telegramId } = req.query;
+    
+        try {
+            const user = await UserProgress.findOne({ telegramId });
+            if (!user) {
+                return res.status(404).json({ success: false, message: 'Пользователь не найден.' });
+            }
+    
+            res.json({ success: true, WeeklyNft_val: user.WeeklyNft_val });
+        } catch (error) {
+            console.error('Ошибка при получении WeeklyNft_val:', error);
+            res.status(500).json({ success: false, message: 'Ошибка при получении WeeklyNft_val.' });
+        }
+    });
+    
 
       app.get('/user-info', async (req, res) => {
         const { telegramId } = req.query;
@@ -705,6 +721,27 @@ app.post('/update-ton-tran-val', async (req, res) => {
     } catch (error) {
         console.error('Ошибка при обновлении TonTran_val:', error);
         res.status(500).json({ success: false, message: 'Ошибка при обновлении TonTran_val.' });
+    }
+});
+
+app.post('/update-weekly-nft-val', async (req, res) => {
+    const { telegramId } = req.body;
+
+    try {
+        // Поиск пользователя по telegramId
+        const user = await UserProgress.findOne({ telegramId });
+        if (!user) {
+            return res.status(404).json({ success: false, message: 'Пользователь не найден.' });
+        }
+
+        // Обновляем значение TonTran_val на true
+        user.WeeklyNft_val = true;
+        await user.save();
+
+        res.json({ success: true, message: 'WeeklyNft_val  обновлено успешно.' });
+    } catch (error) {
+        console.error('Ошибка при обновлении WeeklyNft_val :', error);
+        res.status(500).json({ success: false, message: 'Ошибка при обновлении WeeklyNft_val .' });
     }
 });
 
