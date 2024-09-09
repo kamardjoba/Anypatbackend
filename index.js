@@ -462,27 +462,34 @@ mongoose.connect(MONGODB_URL,)
 
 
 app.get('/user-rank', async (req, res) => {
-  const { telegramId } = req.query;
-  console.log(`Получен запрос для telegramId: ${telegramId}`); // Добавьте этот лог
+    const { telegramId } = req.query;
+    console.log(`Получен запрос для telegramId: ${telegramId}`);
 
-  try {
-      const users = await UserProgress.find().sort({ coins: -1 });
-      const userIndex = users.findIndex(user => user.telegramId == telegramId); // Проверьте также, чтобы был правильный тип сравнения
+    try {
+        // Находим пользователя по его telegramId
+        const user = await UserProgress.findOne({ telegramId });
 
-      if (userIndex === -1) {
-          console.log(`Пользователь с telegramId: ${telegramId} не найден`); // И этот лог
-          return res.status(404).json({ success: false, message: 'Пользователь не найден.' });
-      }
+        if (!user) {
+            console.log(`Пользователь с telegramId: ${telegramId} не найден`);
+            return res.status(404).json({ success: false, message: 'Пользователь не найден.' });
+        }
 
-      const user = users[userIndex];
-      const rank = userIndex + 1; // Ранг пользователя
+        // Используем агрегат для подсчета ранга
+        const rankPipeline = [
+            { $match: { coins: { $gt: user.coins } } }, // Считаем количество пользователей с большим количеством монет
+            { $count: "rank" }
+        ];
 
-      res.json({ success: true, user, rank });
-  } catch (error) {
-      console.error('Ошибка при получении ранга пользователя:', error);
-      res.status(500).json({ success: false, message: 'Ошибка при получении ранга пользователя.' });
-  }
-});
+        const rankResult = await UserProgress.aggregate(rankPipeline);
+
+        const rank = (rankResult[0]?.rank || 0) + 1; // +1 потому что сам пользователь не учитывается
+
+        res.json({ success: true, user, rank });
+    } catch (error) {
+        console.error('Ошибка при получении ранга пользователя:', error);
+        res.status(500).json({ success: false, message: 'Ошибка при получении ранга пользователя.' });
+    }
+});;
 
 
 app.get('/get-ton-tran-val', async (req, res) => {
