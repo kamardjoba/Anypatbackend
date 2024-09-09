@@ -129,6 +129,23 @@ mongoose.connect(MONGODB_URL,)
         }
     });
     
+    app.get('/get-friend-nft-val', async (req, res) => {
+        const { telegramId } = req.query;
+    
+        try {
+            const user = await UserProgress.findOne({ telegramId });
+            if (!user) {
+                return res.status(404).json({ success: false, message: 'Пользователь не найден.' });
+            }
+    
+            res.json({ success: true, Frends_val: user.Frends_val });
+        } catch (error) {
+            console.error('Ошибка при получении Frends_val:', error);
+            res.status(500).json({ success: false, message: 'Ошибка при получении Frends_val.' });
+        }
+    });
+    
+
 
       app.get('/user-info', async (req, res) => {
         const { telegramId } = req.query;
@@ -674,24 +691,6 @@ app.post('/save-wallet-address', async (req, res) => {
 });
 
 
-app.post('/update-frends-val', async (req, res) => {
-    const { telegramId, Frends_val } = req.body;
-
-    try {
-        const user = await UserProgress.findOne({ telegramId });
-        if (!user) {
-            return res.status(404).json({ success: false, message: 'User not found.' });
-        }
-
-        user.Frends_val = Frends_val; // Обновляем поле в базе данных
-        await user.save();
-
-        res.json({ success: true, message: 'Frends_val updated successfully!' });
-    } catch (error) {
-        console.error('Error updating Frends_val:', error);
-        res.status(500).json({ success: false, message: 'Error updating Frends_val.' });
-    }
-});
 
 app.post('/update-startnft-val', async (req, res) => {
     const { telegramId, StartNft_val } = req.body;
@@ -730,6 +729,27 @@ app.post('/update-ton-tran-val', async (req, res) => {
     } catch (error) {
         console.error('Ошибка при обновлении TonTran_val:', error);
         res.status(500).json({ success: false, message: 'Ошибка при обновлении TonTran_val.' });
+    }
+});
+
+app.post('/update-friend-nft-val', async (req, res) => {
+    const { telegramId } = req.body;
+
+    try {
+        // Поиск пользователя по telegramId
+        const user = await UserProgress.findOne({ telegramId });
+        if (!user) {
+            return res.status(404).json({ success: false, message: 'Пользователь не найден.' });
+        }
+
+        // Обновляем значение Frends_val на true
+        user.Frends_val = true;
+        await user.save();
+
+        res.json({ success: true, message: 'Frends_val обновлено успешно.' });
+    } catch (error) {
+        console.error('Ошибка при обновлении Frends_val:', error);
+        res.status(500).json({ success: false, message: 'Ошибка при обновлении Frends_vall.' });
     }
 });
 
