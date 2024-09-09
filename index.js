@@ -687,6 +687,26 @@ app.post('/update-startnft-val', async (req, res) => {
     }
 });
 
+app.post('/update-ton-tran-val', async (req, res) => {
+    const { telegramId } = req.body;
+
+    try {
+        // Поиск пользователя по telegramId
+        const user = await UserProgress.findOne({ telegramId });
+        if (!user) {
+            return res.status(404).json({ success: false, message: 'Пользователь не найден.' });
+        }
+
+        // Обновляем значение TonTran_val на true
+        user.TonTran_val = true;
+        await user.save();
+
+        res.json({ success: true, message: 'TonTran_val обновлено успешно.' });
+    } catch (error) {
+        console.error('Ошибка при обновлении TonTran_val:', error);
+        res.status(500).json({ success: false, message: 'Ошибка при обновлении TonTran_val.' });
+    }
+});
 
 bot.onText(/\/start(?: (.+))?/, async (msg, match) => {
   const chatId = msg.chat.id;
