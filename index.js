@@ -90,12 +90,21 @@ mongoose.connect(MONGODB_URL,)
       // Запускаем задачу каждую минуту для тестирования
       cron.schedule('0 0 * * 1', async () => {
           try {
-              await UserProgress.updateMany({}, { $set: { TonTran_val: false } });
+              await UserProgress.updateMany({}, { $set: { TonTran_val: false, WeeklyNft_val: false  } });
               console.log('Сброс TonTran_val выполнен (тестирование каждую минуту)');
           } catch (error) {
               console.error('Ошибка при сбросе TonTran_val:', error);
           }
       });
+
+    //   cron.schedule('0 0 * * 1', async () => {
+    //     try {
+    //         await UserProgress.updateMany({}, { $set: { WeeklyNft_val: false } });
+    //         console.log('Сброс TWeeklyNft_val выполнен (тестирование каждую минуту)');
+    //     } catch (error) {
+    //         console.error('Ошибка при сбросе WeeklyNft_val:', error);
+    //     }
+    // });
       
       app.get('/get-ton-tran-val', async (req, res) => {
         const { telegramId } = req.query;
