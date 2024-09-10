@@ -426,7 +426,7 @@ mongoose.connect(MONGODB_URL,)
             const user = await UserProgress.findOne({ telegramId });
     
             if (user && !user.isSubscribedToBot) {
-                user.coins += 500; // Начисляем 500 монет за подписку на Twitter
+                user.coins += 250; // Начисляем 500 монет за подписку на Twitter
                 user.isSubscribedToBot = true; // Помечаем, что пользователь подписан на Twitter
                 await user.save(); // Сохраняем изменения в базе данных
             }
