@@ -125,6 +125,22 @@ mongoose.connect(MONGODB_URL,)
             res.status(500).json({ success: false, message: 'Error updating ads watched.' });
         }
     });
+
+    app.get('/get-ads-watched', async (req, res) => {
+        const { telegramId } = req.query;
+    
+        try {
+            const user = await UserProgress.findOne({ telegramId });
+            if (!user) {
+                return res.status(404).json({ success: false, message: 'User not found.' });
+            }
+    
+            res.json({ success: true, adsWatched: user.adsWatched });
+        } catch (error) {
+            console.error('Error retrieving ads watched:', error);
+            res.status(500).json({ success: false, message: 'Error retrieving ads watched.' });
+        }
+    });
       
       
       app.get('/get-ton-tran-val', async (req, res) => {
