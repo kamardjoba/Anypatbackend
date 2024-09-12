@@ -170,6 +170,7 @@ mongoose.connect(MONGODB_URL,)
                 StartNft_val: user.StartNft_val,
                 firstName: user.firstName,
                 coins: user.coins,
+                isSubscribedToBot: user.isSubscribedToBot,
                 photoUrl: user.photoUrl // добавляем URL фото из базы данных
             });
         } catch (error) {
