@@ -23,15 +23,9 @@ const UserSchema = new mongoose.Schema({
       type: String, 
       unique: true 
     },
-    adViews: {
-      count: { 
-        type: Number,
-         default: 0 
-        },
-      lastViewed: { 
-        type: Date,
-         default: null 
-        },
+    adsWatched: {
+      type: Number,
+      default: 0,
   },
     isSubscribedToChannel: {  // Новое поле для проверки подписки
       type: Boolean,

@@ -106,39 +106,23 @@ mongoose.connect(MONGODB_URL,)
         }
     });
 
-    app.post('/track-ad-view', async (req, res) => {
+    app.post('/update-ads-watched', async (req, res) => {
         const { telegramId } = req.body;
     
         try {
-            let user = await UserProgress.findOne({ telegramId });
-    
+            const user = await UserProgress.findOne({ telegramId });
             if (!user) {
-                return res.status(404).json({ success: false, message: 'Пользователь не найден' });
+                return res.status(404).json({ success: false, message: 'User not found.' });
             }
     
-            const today = new Date().toLocaleDateString();
-            const lastViewedDate = user.adViews.lastViewed ? new Date(user.adViews.lastViewed).toLocaleDateString() : null;
-    
-            if (lastViewedDate !== today) {
-                // Если дата последнего просмотра не сегодняшняя, сбрасываем счетчик
-                user.adViews.count = 0;
-                user.adViews.lastViewed = new Date();
-            }
-    
-            if (user.adViews.count >= 20) {
-                return res.json({ success: false, message: 'Лимит просмотров рекламы на сегодня достигнут' });
-            }
-    
-            // Увеличиваем счетчик
-            user.adViews.count += 1;
-            user.adViews.lastViewed = new Date();
+            // Increment the number of ads watched
+            user.adsWatched += 1;
             await user.save();
     
-            res.json({ success: true, adViews: user.adViews.count });
-    
+            res.json({ success: true, adsWatched: user.adsWatched });
         } catch (error) {
-            console.error('Ошибка при обновлении количества просмотров рекламы:', error);
-            res.status(500).json({ success: false, message: 'Ошибка сервера' });
+            console.error('Error updating ads watched:', error);
+            res.status(500).json({ success: false, message: 'Error updating ads watched.' });
         }
     });
       
