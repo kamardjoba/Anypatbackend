@@ -106,6 +106,16 @@ mongoose.connect(MONGODB_URL,)
         }
     });
 
+    cron.schedule('0 0 * * *', async () => {
+        try {
+            await UserProgress.updateMany({}, { $set: { adsWatched: 0 } });
+            console.log('adsWatched reset to 0 for all users.');
+        } catch (error) {
+            console.error('Error resetting adsWatched:', error);
+        }
+    });
+    
+
     app.post('/update-ads-watched', async (req, res) => {
         const { telegramId } = req.body;
     
