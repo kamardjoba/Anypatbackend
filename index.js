@@ -106,7 +106,7 @@ mongoose.connect(MONGODB_URL,)
         }
     });
 
-    cron.schedule('* * * * *', async () => {
+    cron.schedule('0 0 * * *', async () => {
         try {
             await UserProgress.updateMany({}, { $set: { adsWatched: 0 } });
             console.log('adsWatched reset to 0 for all users.');
