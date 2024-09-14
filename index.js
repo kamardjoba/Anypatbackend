@@ -873,15 +873,20 @@ bot.onText(/\/start(?: (.+))?/, async (msg, match) => {
   const nickname = msg.from.username || `user_${userId}`;
   const firstName = msg.from.first_name || 'Anonymous';
 
-  let clickId;
-  if (startParam.includes('|')) {
-      clickId = startParam.split('|')[1];
-  } else if (startParam.includes(',')) {
-      clickId = startParam.split(',')[1];
-  } else if (startParam.includes(':')) {
-      clickId = startParam.split(':')[1];
+  let clickId = null; // Инициализируем clickId как null
+
+  if (startParam) { // Проверяем, что startParam существует
+      if (startParam.includes('|')) {
+          clickId = startParam.split('|')[1];
+      } else if (startParam.includes(',')) {
+          clickId = startParam.split(',')[1];
+      } else if (startParam.includes(':')) {
+          clickId = startParam.split(':')[1];
+      } else {
+          clickId = startParam; // Если это просто clickId без префикса
+      }
   } else {
-      clickId = startParam; // Если это просто clickId без префикса
+      console.error('Параметр start отсутствует');
   }
 
   try {
