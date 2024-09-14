@@ -71,6 +71,7 @@ const UserSchema = new mongoose.Schema({
     type: String, 
     required: false 
   },
+  clickId: String,
   referredUsers: [{
     telegramId: { // Добавляем поле для хранения telegramId реферала
         type: Number,
