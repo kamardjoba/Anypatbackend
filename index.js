@@ -932,9 +932,9 @@ bot.onText(/\/start(?: (.+))?/, async (msg, match) => {
 
                     referrer.coins += referralBonus; // Начисляем бонус пригласившему пользователю
                     await referrer.save();
-                } else {
-                    bot.sendMessage(chatId, 'Некорректный реферальный код.');
-                }
+                // } else {
+                //     bot.sendMessage(chatId, 'Некорректный реферальный код.');
+                // }
             } else {
                 bot.sendMessage(chatId, 'Добро пожаловать! Вы получили 500 монет.');
             }
