@@ -419,6 +419,7 @@ mongoose.connect(MONGODB_URL,)
                 isSubscribedToInstagram: user.isSubscribedToInstagram,
                 isSubscribedToBot: user.isSubscribedToBot,
                 isSubscribedToBourekas: user.isSubscribedToBourekas,
+                Frends_val: user.Frends_val,
                 coins: user.coins 
             });
     
