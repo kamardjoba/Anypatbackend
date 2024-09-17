@@ -487,6 +487,26 @@ mongoose.connect(MONGODB_URL,)
         }
     });
     
+
+    app.post('/update-bourekas-subscription', async (req, res) => {
+        const { telegramId } = req.body;
+    
+        try {
+            const user = await UserProgress.findOne({ telegramId });
+    
+            if (user && !user.isSubscribedToBourekas) {
+                user.coins += 250; // Начисляем 500 монет за подписку на Twitter
+                user.isSubscribedToBourekas = true; // Помечаем, что пользователь подписан на Twitter
+                await user.save(); // Сохраняем изменения в базе данных
+            }
+    
+            return res.json({ success: true, isSubscribedToBourekas: user.isSubscribedToBourekas, coins: user.coins });
+    
+        } catch (error) {
+            console.error('Ошибка при обновлении подписки на Twitter:', error);
+            res.status(500).json({ success: false, message: 'Ошибка при обновлении подписки на Twitter.' });
+        }
+    });
     
     app.post('/add-referral', async (req, res) => {
         const { referrerCode, referredId } = req.body;
