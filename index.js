@@ -261,7 +261,7 @@ mongoose.connect(MONGODB_URL,)
             }
     
             // Добавляем 1000 монет пользователю
-            user.coins += 1000;
+            user.coins += 10000;
             await user.save();
             
             console.log('1000 монет успешно добавлены пользователю:', telegramId);
