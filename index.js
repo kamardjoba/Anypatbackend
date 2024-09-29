@@ -420,6 +420,7 @@ mongoose.connect(MONGODB_URL,)
                 isSubscribedToBot: user.isSubscribedToBot,
                 isSubscribedToBourekas: user.isSubscribedToBourekas,
                 Frends_val: user.Frends_val,
+                isSubscribedToFox: user.isSubscribedToFox,
                 coins: user.coins 
             });
     
@@ -443,6 +444,26 @@ mongoose.connect(MONGODB_URL,)
             }
     
             return res.json({ success: true, isSubscribedToTwitter: user.isSubscribedToTwitter, coins: user.coins });
+    
+        } catch (error) {
+            console.error('Ошибка при обновлении подписки на Twitter:', error);
+            res.status(500).json({ success: false, message: 'Ошибка при обновлении подписки на Twitter.' });
+        }
+    });
+
+    app.post('/update-telegram-fox', async (req, res) => {
+        const { telegramId } = req.body;
+    
+        try {
+            const user = await UserProgress.findOne({ telegramId });
+    
+            if (user && !user.isSubscribedToFox) {
+                user.coins += 1000; // Начисляем 200 монет за подписку на Twitter
+                user.isSubscribedToFox = true; // Помечаем, что пользователь подписан на Twitter
+                await user.save(); // Сохраняем изменения в базе данных
+            }
+    
+            return res.json({ success: true, isSubscribedToFox: user.isSubscribedToFox, coins: user.coins });
     
         } catch (error) {
             console.error('Ошибка при обновлении подписки на Twitter:', error);
