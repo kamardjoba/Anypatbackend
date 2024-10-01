@@ -423,6 +423,9 @@ mongoose.connect(MONGODB_URL,)
                 isSubscribedToFox: user.isSubscribedToFox,
                 coins: user.coins 
             });
+
+
+            
     
         } catch (error) {
             console.error('Ошибка при проверке подписки:', error);
