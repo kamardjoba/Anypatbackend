@@ -204,7 +204,7 @@ mongoose.connect(MONGODB_URL,)
 
 
     app.get('/user-info', async (req, res) => {
-        const { telegramId } = req.query;
+        const { telegramId1 } = req.query;
     
         try {
             let user = await UserProgress.findOne({ telegramId });
