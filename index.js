@@ -203,15 +203,33 @@ mongoose.connect(MONGODB_URL,)
     
 
 
-      app.get('/user-info', async (req, res) => {
+    app.get('/user-info', async (req, res) => {
         const { telegramId } = req.query;
     
         try {
-            const user = await UserProgress.findOne({ telegramId: telegramId });
+            let user = await UserProgress.findOne({ telegramId });
+    
+            // Если пользователя нет, создаем его с начальными значениями
             if (!user) {
-                return res.status(404).json({ success: false, message: 'Пользователь не найден.' });
+                console.log(`Пользователь с telegramId ${telegramId} не найден, создаем нового пользователя.`);
+                const nickname = `user_${telegramId}`;
+                const firstName = 'Anonymous';  // Или возьмите это значение из запроса, если оно передается
+                const coins = 500;  // Начальные монеты
+                const referralCode = generateReferralCode();
+    
+                user = new UserProgress({
+                    telegramId,
+                    nickname,
+                    firstName,
+                    coins,
+                    referralCode
+                });
+    
+                await user.save();
+                console.log(`Новый пользователь с telegramId ${telegramId} успешно создан.`);
             }
     
+            // Возвращаем информацию о пользователе
             res.json({
                 success: true,
                 StartNft_val: user.StartNft_val,
