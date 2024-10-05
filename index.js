@@ -492,6 +492,48 @@ mongoose.connect(MONGODB_URL,)
         }
     });
     
+
+    app.post('/update-telegram-center', async (req, res) => {
+        const { telegramId } = req.body;
+    
+        try {
+            const user = await UserProgress.findOne({ telegramId });
+    
+            if (user && !user.isSubscribedToCenter) {
+                user.coins += 1000; // Начисляем 200 монет за подписку на Twitter
+                user.isSubscribedToCenter = true; // Помечаем, что пользователь подписан на Twitter
+                await user.save(); // Сохраняем изменения в базе данных
+            }
+    
+            return res.json({ success: true, isSubscribedToCenter: user.isSubscribedToCenter, coins: user.coins });
+    
+        } catch (error) {
+            console.error('Ошибка при обновлении подписки на Twitter:', error);
+            res.status(500).json({ success: false, message: 'Ошибка при обновлении подписки на Twitter.' });
+        }
+    });
+    
+    app.post('/update-telegram-App-center', async (req, res) => {
+        const { telegramId } = req.body;
+    
+        try {
+            const user = await UserProgress.findOne({ telegramId });
+    
+            if (user && !user.isSubscribedToCenterapp) {
+                user.coins += 1000; // Начисляем 200 монет за подписку на Twitter
+                user.isSubscribedTisSubscribedToCenterappoFox = true; // Помечаем, что пользователь подписан на Twitter
+                await user.save(); // Сохраняем изменения в базе данных
+            }
+    
+            return res.json({ success: true, isSubscribedToCenterapp: user.isSubscribedToCenterapp, coins: user.coins });
+    
+        } catch (error) {
+            console.error('Ошибка при обновлении подписки на Twitter:', error);
+            res.status(500).json({ success: false, message: 'Ошибка при обновлении подписки на Twitter.' });
+        }
+    });
+    
+
     app.post('/update-instagram-subscription', async (req, res) => {
         const { telegramId } = req.body;
     
