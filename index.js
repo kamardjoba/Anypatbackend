@@ -439,6 +439,8 @@ mongoose.connect(MONGODB_URL,)
                 isSubscribedToBourekas: user.isSubscribedToBourekas,
                 Frends_val: user.Frends_val,
                 isSubscribedToFox: user.isSubscribedToFox,
+                isSubscribedToCenter: user.isSubscribedToCenter,
+                isSubscribedToCenterapp: user.isSubscribedToCenterapp,
                 coins: user.coins 
             });
 
