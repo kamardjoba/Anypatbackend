@@ -523,7 +523,7 @@ mongoose.connect(MONGODB_URL,)
     
             if (user && !user.isSubscribedToCenterapp) {
                 user.coins += 1000; // Начисляем 200 монет за подписку на Twitter
-                user.isSubscribedTisSubscribedToCenterappoFox = true; // Помечаем, что пользователь подписан на Twitter
+                user.isSubscribedToCenterapp = true; // Помечаем, что пользователь подписан на Twitter
                 await user.save(); // Сохраняем изменения в базе данных
             }
     
