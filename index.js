@@ -517,7 +517,7 @@ mongoose.connect(MONGODB_URL,)
     });
 
 
-    
+    isSubscribedToChat
     app.post('/update-telegram-Pixel', async (req, res) => {
         const { telegramId } = req.body;
     
@@ -531,6 +531,47 @@ mongoose.connect(MONGODB_URL,)
             }
     
             return res.json({ success: true, isSubscribedToPixel: user.isSubscribedToPixel, coins: user.coins });
+    
+        } catch (error) {
+            console.error('Ошибка при обновлении подписки на Twitter:', error);
+            res.status(500).json({ success: false, message: 'Ошибка при обновлении подписки на Twitter.' });
+        }
+    });
+
+    app.post('/update-telegram-Chat', async (req, res) => {
+        const { telegramId } = req.body;
+    
+        try {
+            const user = await UserProgress.findOne({ telegramId });
+    
+            if (user && !user.isSubscribedToChat) {
+                user.coins += 500; // Начисляем 200 монет за подписку на Twitter
+                user.isSubscribedToChat = true; // Помечаем, что пользователь подписан на Twitter
+                await user.save(); // Сохраняем изменения в базе данных
+            }
+    
+            return res.json({ success: true,  isSubscribedToChat: user. isSubscribedToChat, coins: user.coins });
+    
+        } catch (error) {
+            console.error('Ошибка при обновлении подписки на Twitter:', error);
+            res.status(500).json({ success: false, message: 'Ошибка при обновлении подписки на Twitter.' });
+        }
+    });
+    Gaspump
+
+    app.post('/update-telegram-Gaspump', async (req, res) => {
+        const { telegramId } = req.body;
+    
+        try {
+            const user = await UserProgress.findOne({ telegramId });
+    
+            if (user && !user.isSubscribedToGaspump) {
+                user.coins += 500; // Начисляем 200 монет за подписку на Twitter
+                user.isSubscribedToGaspump = true; // Помечаем, что пользователь подписан на Twitter
+                await user.save(); // Сохраняем изменения в базе данных
+            }
+    
+            return res.json({ success: true,  isSubscribedToGaspump: user. isSubscribedToGaspump, coins: user.coins });
     
         } catch (error) {
             console.error('Ошибка при обновлении подписки на Twitter:', error);
