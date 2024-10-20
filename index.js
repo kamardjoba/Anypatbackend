@@ -519,7 +519,7 @@ mongoose.connect(MONGODB_URL,)
     });
 
 
-    isSubscribedToChat
+
     app.post('/update-telegram-Pixel', async (req, res) => {
         const { telegramId } = req.body;
     
