@@ -443,6 +443,8 @@ mongoose.connect(MONGODB_URL,)
                 isSubscribedToPixel: user.isSubscribedToPixel,
                 isSubscribedToCenter: user.isSubscribedToCenter,
                 isSubscribedToCenterapp: user.isSubscribedToCenterapp,
+                isSubscribedToChat:user.isSubscribedToChat,
+                isSubscribedToGaspump: user.isSubscribedToGaspump,
                 coins: user.coins 
             });
 
