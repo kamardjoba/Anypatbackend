@@ -559,7 +559,7 @@ mongoose.connect(MONGODB_URL,)
             res.status(500).json({ success: false, message: 'Ошибка при обновлении подписки на Twitter.' });
         }
     });
-    Gaspump
+
 
     app.post('/update-telegram-Gaspump', async (req, res) => {
         const { telegramId } = req.body;
