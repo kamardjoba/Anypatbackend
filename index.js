@@ -1064,26 +1064,26 @@ bot.onText(/\/start(?: (.+))?/, async (msg, match) => {
   const chatId = msg.chat.id;
   const userId = msg.from.id;
   const referrerCode = match[1]; // Реферальный код из ссылки, если он есть
-  const startParam = match[1];
+//   const startParam = match[1];
 
   const nickname = msg.from.username || `user_${userId}`;
   const firstName = msg.from.first_name || 'Anonymous';
 
   let clickId = null; // Инициализируем clickId как null
 
-  if (startParam) { // Проверяем, что startParam существует
-      if (startParam.includes('|')) {
-          clickId = startParam.split('|')[1];
-      } else if (startParam.includes(',')) {
-          clickId = startParam.split(',')[1];
-      } else if (startParam.includes(':')) {
-          clickId = startParam.split(':')[1];
-      } else {
-          clickId = startParam; // Если это просто clickId без префикса
-      }
-  } else {
-      console.error('Параметр start отсутствует');
-  }
+//   if (startParam) { // Проверяем, что startParam существует
+//       if (startParam.includes('|')) {
+//           clickId = startParam.split('|')[1];
+//       } else if (startParam.includes(',')) {
+//           clickId = startParam.split(',')[1];
+//       } else if (startParam.includes(':')) {
+//           clickId = startParam.split(':')[1];
+//       } else {
+//           clickId = startParam; // Если это просто clickId без префикса
+//       }
+//   } else {
+//       console.error('Параметр start отсутствует');
+//   }
 
   try {
       let user = await UserProgress.findOne({ telegramId: userId });
