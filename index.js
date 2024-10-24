@@ -445,6 +445,7 @@ mongoose.connect(MONGODB_URL,)
                 isSubscribedToCenterapp: user.isSubscribedToCenterapp,
                 isSubscribedToChat:user.isSubscribedToChat,
                 isSubscribedToGaspump: user.isSubscribedToGaspump,
+                isSubscribedToCaptcha: user.isSubscribedToCaptcha,
                 coins: user.coins 
             });
 
