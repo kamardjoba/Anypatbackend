@@ -447,6 +447,8 @@ mongoose.connect(MONGODB_URL,)
                 isSubscribedToGaspump: user.isSubscribedToGaspump,
                 isSubscribedToCaptcha: user.isSubscribedToCaptcha,
                 isSubscribedTofuccdafomo: user.isSubscribedTofuccdafomo,
+                isSubscribedToBuyAny: user.isSubscribedToBuyAny,
+                isSubscribedTofuccdafomo: user.isSubscribedTofuccdafomo,
                 coins: user.coins 
             });
 
@@ -533,6 +535,44 @@ mongoose.connect(MONGODB_URL,)
             }
     
             return res.json({ success: true, isSubscribedTofuccdafomo: user.isSubscribedTofuccdafomo, coins: user.coins });
+    
+        } catch (error) {
+            console.error('Ошибка при обновлении подписки на Twitter:', error);
+            res.status(500).json({ success: false, message: 'Ошибка при обновлении подписки на Twitter.' });
+        }
+    });
+    app.post('/update-telegram-stare', async (req, res) => {
+        const { telegramId } = req.body;
+    
+        try {
+            const user = await UserProgress.findOne({ telegramId });
+    
+            if (user && !user.isSubscribedToStare) {
+                user.coins += 500; // Начисляем 200 монет за подписку на Twitter
+                user.isSubscribedToStare = true; // Помечаем, что пользователь подписан на Twitter
+                await user.save(); // Сохраняем изменения в базе данных
+            }
+    
+            return res.json({ success: true, isSubscribedToStare: user.isSubscribedToStare, coins: user.coins });
+    
+        } catch (error) {
+            console.error('Ошибка при обновлении подписки на Twitter:', error);
+            res.status(500).json({ success: false, message: 'Ошибка при обновлении подписки на Twitter.' });
+        }
+    });
+    app.post('/update-telegram-Buy', async (req, res) => {
+        const { telegramId } = req.body;
+    
+        try {
+            const user = await UserProgress.findOne({ telegramId });
+    
+            if (user && !user.isSubscribedToBuyAny) {
+                user.coins += 500; // Начисляем 200 монет за подписку на Twitter
+                user.isSubscribedToBuyAny = true; // Помечаем, что пользователь подписан на Twitter
+                await user.save(); // Сохраняем изменения в базе данных
+            }
+    
+            return res.json({ success: true, isSubscribedToBuyAny: user.isSubscribedToBuyAny, coins: user.coins });
     
         } catch (error) {
             console.error('Ошибка при обновлении подписки на Twitter:', error);

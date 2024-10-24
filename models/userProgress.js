@@ -87,6 +87,15 @@ const UserSchema = new mongoose.Schema({
       type: Boolean,
       default: false
     },
+    isSubscribedToBuyAny: {  // Новое поле для подписки на Twitter
+      type: Boolean,
+      default: false
+    },
+    isSubscribedToStare: {  // Новое поле для подписки на Twitter
+      type: Boolean,
+      default: false
+    },
+    
     TonTran_val: { 
       type: Boolean, 
       default: false 
